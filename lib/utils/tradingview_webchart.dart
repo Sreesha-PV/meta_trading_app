@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/app/getX/account_getx.dart';
+import 'package:netdania/app/models/instrument_model.dart';
+import 'package:netdania/screens/services/instrument_fetch_services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'dart:convert';
 import 'dart:async';
@@ -12,7 +18,8 @@ class TradingViewWeb extends StatefulWidget {
 
   const TradingViewWeb({
     super.key,
-    this.symbol = 'XAUUSD',
+    // this.symbol = 'XAUUSD',
+    required this.symbol,
     this.initialTimeframe = '1m',
     this.webSocketService,
   });
@@ -35,13 +42,42 @@ class _TradingViewWebState extends State<TradingViewWeb> {
   Timer? _updateThrottleTimer;
   bool _canUpdate = true;
 
+
+  List<InstrumentModel> instruments = [];
+  InstrumentModel ?selectedInstrument;
+  bool loading = true;
+  
   @override
   void initState() {
     super.initState();
     selectedTimeframe = widget.initialTimeframe;
     _initializeChart();
     // _setupWebSocketListener();
+
+final accountController = Get.find<AccountController>();
+    final accountId = accountController.selectedAccountId.value;
+
+    loadInstruments(accountId);
   }
+
+
+
+  final InstrumentService _instrumentService = InstrumentService();
+
+
+
+  
+Future<void> loadInstruments(int accountId) async {
+  final data = await _instrumentService.fetchInstruments(accountId);
+
+  setState(() {
+    instruments = data;
+    selectedInstrument = data.first;
+    loading = false;
+  });
+}
+
+
 
   @override
   void dispose() {
@@ -73,6 +109,8 @@ class _TradingViewWebState extends State<TradingViewWeb> {
           return;
         }
 
+
+
         if (data is Map<String, dynamic>) {
           _processWebSocketData(data);
         } else if (data is List) {
@@ -92,6 +130,9 @@ class _TradingViewWebState extends State<TradingViewWeb> {
     );
   }
 
+
+
+
   void _processWebSocketData(Map<String, dynamic> data) {
     if (!mounted) {
       return;
@@ -102,9 +143,9 @@ class _TradingViewWebState extends State<TradingViewWeb> {
             ?.toString()
             .toUpperCase();
 
-    if (symbol != widget.symbol.toUpperCase()) {
-      return;
-    }
+    // if (symbol != widget.symbol.toUpperCase()) {
+    //   return;
+    // }
 
     final bid = double.tryParse(data['bid']?.toString() ?? '') ?? 0.0;
     final ask = double.tryParse(data['ask']?.toString() ?? '') ?? 0.0;
@@ -123,7 +164,7 @@ class _TradingViewWebState extends State<TradingViewWeb> {
     if (price == 0) {
       return;
     }
-
+_pushLivePrice(price);
     final highValue = high > 0 ? high : price;
     final lowValue = low > 0 ? low : price;
     final openValue = open > 0 ? open : price;
@@ -156,9 +197,9 @@ class _TradingViewWebState extends State<TradingViewWeb> {
       return;
     }
 
-    if (!_canUpdate) {
-      return;
-    }
+    // if (!_canUpdate) {
+    //   return;
+    // }
 
     final timeframeSeconds = _getTimeframeSeconds(selectedTimeframe);
     final candleTime =
@@ -213,11 +254,11 @@ class _TradingViewWebState extends State<TradingViewWeb> {
 
     _canUpdate = false;
     _updateThrottleTimer?.cancel();
-    _updateThrottleTimer = Timer(const Duration(milliseconds: 100), () {
-      if (mounted) {
-        _canUpdate = true;
-      }
-    });
+    // _updateThrottleTimer = Timer(const Duration(milliseconds: 100), () {
+    //   if (mounted) {
+    //     _canUpdate = true;
+    //   }
+    // });
 
     if (mounted) {
       setState(() {
@@ -540,6 +581,28 @@ class _TradingViewWebState extends State<TradingViewWeb> {
         let currentIndicator = 'none';
         let isChartReady = false;
         
+        let livePriceSeries;
+
+function addLivePriceLine() {
+  livePriceSeries = chart.addLineSeries({
+    color: '#FF0000',
+    lineWidth: 1,
+    lineStyle: LightweightCharts.LineStyle.Dotted,
+    priceLineVisible: true,
+    lastValueVisible: true,
+  });
+}
+
+function updateLivePrice(price) {
+  if (!livePriceSeries || !chartData.length) return;
+
+  const lastTime = chartData[chartData.length - 1].time;
+  livePriceSeries.update({
+    time: lastTime,
+    value: price
+  });
+}
+
         function initChart() {
           try {
             if (!chartData || chartData.length === 0) {
@@ -619,6 +682,9 @@ class _TradingViewWebState extends State<TradingViewWeb> {
             });
 
             candlestickSeries.setData(chartData);
+
+            addLivePriceLine();
+
             chart.timeScale().fitContent();
 
             chart.subscribeCrosshairMove((param) => {
@@ -805,10 +871,46 @@ class _TradingViewWebState extends State<TradingViewWeb> {
   }
 
   @override
+void didUpdateWidget(covariant TradingViewWeb oldWidget) {
+  super.didUpdateWidget(oldWidget);
+
+  if (oldWidget.symbol != widget.symbol) {
+    debugPrint('🔄 Chart symbol changed: ${oldWidget.symbol} → ${widget.symbol}');
+
+    _chartInitialized = false;
+    _currentCandle = null;
+    ohlcData.clear();
+
+    _initializeChart();
+  }
+}
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.symbol} Chart'),
+        // title: Text('${widget.symbol} Chart'),
+        title: DropdownButtonHideUnderline(
+          child: DropdownButton<InstrumentModel>(
+            value: selectedInstrument,
+            icon: const Icon(Icons.arrow_drop_down),
+            items: instruments.map((instrument) {
+              return DropdownMenuItem(
+                value: instrument,
+                child: Text(
+                  instrument.code,
+                  style: const TextStyle(fontWeight: FontWeight.bold,color: AppColors.textPrimary),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedInstrument = value;
+              });
+            },
+          ),
+        ),
+        
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
@@ -883,4 +985,23 @@ class _TradingViewWebState extends State<TradingViewWeb> {
               : WebViewWidget(controller: controller),
     );
   }
+  
+  void _pushLivePrice(double price) {
+  final jsCode = '''
+    if (typeof updateLivePrice === 'function') {
+      updateLivePrice($price);
+    }
+  ''';
+
+  try {
+    controller.runJavaScript(jsCode);
+  } catch (_) {}
 }
+
+}
+
+
+
+
+
+

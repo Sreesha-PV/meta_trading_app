@@ -156,7 +156,7 @@ class _MainTabViewState extends State<MainTabView> {
         //   symbol: symbol
         //   ),
         // CandlestickChartWidget(),
-        TradingViewWeb(symbol: 'XAUUSD', webSocketService: _webSocketService),
+        TradingViewWeb(symbol: symbol, webSocketService: _webSocketService),
         // TradingViewWeb(symbol: 'XAUUSD'),
         // TradingViewMobile(symbol: symbol,),
         // TradingViewChart(symbol: symbol),
