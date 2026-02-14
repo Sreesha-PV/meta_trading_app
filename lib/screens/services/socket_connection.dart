@@ -11,7 +11,6 @@ class LocalWebSocketService {
   final StreamController<dynamic> _streamController =
       StreamController<dynamic>.broadcast();
 
-  // Public stream getter for chart integration
   Stream<dynamic> get stream => _streamController.stream;
 
   LocalWebSocketService({

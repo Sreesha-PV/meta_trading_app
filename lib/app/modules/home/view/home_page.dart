@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
-import 'package:netdania/app/features/widgets/add/add_symbol.dart';
+// import 'package:netdania/app/features/widgets/add/add_symbol.dart';
 import 'package:netdania/app/features/widgets/edit/edit_symbol.dart';
 import 'package:netdania/app/getX/trade_getX.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
@@ -35,10 +35,10 @@ class HomePage extends StatelessWidget {
     final TradePageController tradeController = Get.find<TradePageController>();
     final TradingChartController chartController =
         Get.find<TradingChartController>();
-    final SymbolFilterController symbolFilterController = Get.put(
-      SymbolFilterController(),
-      permanent: true,
-    );
+    final SymbolFilterController symbolFilterController =
+        Get.isRegistered<SymbolFilterController>()
+            ? Get.find<SymbolFilterController>()
+            : Get.put(SymbolFilterController(), permanent: true);
 
     _subscribeToSymbols(
       tradeController,
@@ -56,7 +56,16 @@ class HomePage extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Obx(() {
             if (symbolFilterController.isLoading.value) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Loading symbols...'),
+                  ],
+                ),
+              );
             }
 
             return LayoutBuilder(
@@ -112,7 +121,6 @@ class HomePage extends StatelessWidget {
                           searchQuery,
                         );
 
-                        // Show "no results" message if search returns empty
                         if (filteredData.isEmpty && searchQuery.isNotEmpty) {
                           return Center(
                             child: Column(

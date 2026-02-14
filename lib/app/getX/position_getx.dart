@@ -114,15 +114,17 @@ class PositionsController extends GetxController {
     for (var position in positionOrders) {
       final instrument =
           tradingController.getInstrument(position.instrumentId) ??
-              InstrumentModel(
-                instrumentId: position.instrumentId,
-                name: 'UNKNOWN',
-                code: 'UNKNOWN',
-              );
+          InstrumentModel(
+            instrumentId: position.instrumentId,
+            name: 'UNKNOWN',
+            code: 'UNKNOWN',
+            decimalPlaces: 0,
+          );
       final symbolKey = PriceHelper.normalizeSymbol(
         instrument.code.toUpperCase(),
       );
       final ticker = tickers[symbolKey];
+      print("Positions to calculate P&L ${ticker}");
 
       if (ticker != null) {
         final currentPrice = PriceHelper.getCurrentPrice(
@@ -139,8 +141,9 @@ class PositionsController extends GetxController {
         double currencyRate = 1.0;
 
         if (plCalcModeId == 5 || plCalcModeId == 6) {
-          final quoteCurrencyId = instrumentDetails
-              ?.quoteCurrencyInstrumentId; // ← Added null safety
+          final quoteCurrencyId =
+              instrumentDetails
+                  ?.quoteCurrencyInstrumentId;
 
           if (quoteCurrencyId != null) {
             if (!tradingController.hasInstrumentDetails(quoteCurrencyId)) {
@@ -157,19 +160,13 @@ class PositionsController extends GetxController {
                   tradingController.tickers[quoteCurrencySymbolKey];
 
               if (quoteCurrencyTicker != null) {
-                final currencyRateBuy = (PriceHelper.getCurrentPrice(
-                          quoteCurrencyTicker,
-                          1,
-                        ) ??
-                        0)
-                    .toDouble();
+                final currencyRateBuy =
+                    (PriceHelper.getCurrentPrice(quoteCurrencyTicker, 1) ?? 0)
+                        .toDouble();
 
-                final currencyRateSell = (PriceHelper.getCurrentPrice(
-                          quoteCurrencyTicker,
-                          2,
-                        ) ??
-                        0)
-                    .toDouble();
+                final currencyRateSell =
+                    (PriceHelper.getCurrentPrice(quoteCurrencyTicker, 2) ?? 0)
+                        .toDouble();
 
                 currencyRate = (currencyRateBuy + currencyRateSell) / 2.0;
               }
@@ -223,6 +220,4 @@ class PositionsController extends GetxController {
     isLoaded.value = false;
     print("✓ Positions cache cleared");
   }
-
-
 }

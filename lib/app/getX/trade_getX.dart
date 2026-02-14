@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:netdania/screens/services/authservices.dart';
 import 'package:netdania/screens/services/socket_connection.dart';
 import 'package:netdania/screens/services/price_services.dart';
@@ -7,6 +8,11 @@ import 'package:intl/intl.dart';
 
 class TradePageController extends GetxController {
   late LocalWebSocketService _webSocketService;
+  late GetStorage _priceCache;
+
+  // Cache keys
+  static const String _cacheKeyPrefix = 'price_cache_';
+  static const String _cacheTimestampKey = 'cache_timestamp';
 
   // Keeps track of previous prices for spread and direction
   final oldPrices = <String, Map<String, String>>{}.obs;
@@ -22,6 +28,8 @@ class TradePageController extends GetxController {
 
   // Constructor with optional initial symbols
   TradePageController({List<String>? initialSymbols}) {
+    _priceCache = GetStorage('price_cache');
+    
     if (initialSymbols != null && initialSymbols.isNotEmpty) {
       symbols.addAll(initialSymbols);
       debugPrint(
@@ -34,9 +42,82 @@ class TradePageController extends GetxController {
   void onInit() async {
     super.onInit();
 
-    // DON'T start WebSocket here automatically
-    // Wait for symbols to be set via setSymbols() or startWebSocket()
+    // Load cached prices immediately on init
+    _loadCachedPrices();
+
     debugPrint('📊 TradePageController onInit - symbols: ${symbols.length}');
+  }
+
+  /// Load cached prices from storage
+  void _loadCachedPrices() {
+    try {
+      if (symbols.isEmpty) return;
+
+      int loadedCount = 0;
+      for (final symbol in symbols) {
+        final cachedData = _priceCache.read('$_cacheKeyPrefix$symbol');
+        if (cachedData != null && cachedData is Map) {
+          final data = Map<String, dynamic>.from(cachedData);
+          
+          // Check if cache is not too old (optional: e.g., 24 hours)
+          final cacheTime = data['cache_time'] as int?;
+          if (cacheTime != null) {
+            final age = DateTime.now().millisecondsSinceEpoch - cacheTime;
+            // Only use cache if less than 24 hours old
+            if (age < 24 * 60 * 60 * 1000) {
+              final exists = liveData.any((item) => item['symbol'] == symbol);
+              if (!exists) {
+                liveData.add(data);
+                loadedCount++;
+              }
+            }
+          }
+        }
+      }
+
+      if (loadedCount > 0) {
+        debugPrint('💾 Loaded $loadedCount cached prices from storage');
+        isLoadingPrices.value = false;
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error loading cached prices: $e');
+    }
+  }
+
+  /// Save price data to cache
+  void _cachePriceData(String symbol, Map<String, dynamic> data) {
+    try {
+      // Add cache timestamp
+      final dataWithTimestamp = Map<String, dynamic>.from(data);
+      dataWithTimestamp['cache_time'] = DateTime.now().millisecondsSinceEpoch;
+      
+      _priceCache.write('$_cacheKeyPrefix$symbol', dataWithTimestamp);
+      
+      // Update global cache timestamp
+      _priceCache.write(_cacheTimestampKey, DateTime.now().millisecondsSinceEpoch);
+    } catch (e) {
+      debugPrint('⚠️ Error caching price for $symbol: $e');
+    }
+  }
+
+  /// Clear all cached prices
+  Future<void> clearCache() async {
+    try {
+      await _priceCache.erase();
+      debugPrint('🗑️ Price cache cleared');
+    } catch (e) {
+      debugPrint('⚠️ Error clearing cache: $e');
+    }
+  }
+
+  /// Clear cache for specific symbol
+  Future<void> clearSymbolCache(String symbol) async {
+    try {
+      _priceCache.remove('$_cacheKeyPrefix$symbol');
+      debugPrint('🗑️ Cache cleared for $symbol');
+    } catch (e) {
+      debugPrint('⚠️ Error clearing cache for $symbol: $e');
+    }
   }
 
   /// Call this method to set symbols and start WebSocket
@@ -48,6 +129,9 @@ class TradePageController extends GetxController {
 
     symbols.assignAll(newSymbols);
     debugPrint('✅ Symbols set: $newSymbols');
+
+    // Load cached data for new symbols
+    _loadCachedPrices();
 
     // Start WebSocket if not already started
     if (!_socketStarted) {
@@ -262,6 +346,9 @@ class TradePageController extends GetxController {
     } else {
       liveData.add(safeEntry);
     }
+
+    // Cache the price data
+    _cachePriceData(symbol, safeEntry);
   }
 
   Map<String, dynamic>? getInstrumentBySymbol(String symbol) {
@@ -269,6 +356,13 @@ class TradePageController extends GetxController {
       (e) => e['symbol'] == symbol.toUpperCase(),
     );
     if (index >= 0) return liveData[index];
+    
+    // Fallback to cache if not in live data
+    final cached = _priceCache.read('$_cacheKeyPrefix${symbol.toUpperCase()}');
+    if (cached != null && cached is Map) {
+      return Map<String, dynamic>.from(cached);
+    }
+    
     return null;
   }
 
@@ -276,6 +370,24 @@ class TradePageController extends GetxController {
     final instrument = getInstrumentBySymbol(symbol);
     if (instrument != null) {
       return {'bid': instrument['sell'], 'ask': instrument['buy']};
+    }
+    return null;
+  }
+
+  /// Get cache age for a symbol
+  Duration? getCacheAge(String symbol) {
+    try {
+      final cachedData = _priceCache.read('$_cacheKeyPrefix$symbol');
+      if (cachedData != null && cachedData is Map) {
+        final cacheTime = cachedData['cache_time'] as int?;
+        if (cacheTime != null) {
+          return Duration(
+            milliseconds: DateTime.now().millisecondsSinceEpoch - cacheTime,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error getting cache age for $symbol: $e');
     }
     return null;
   }

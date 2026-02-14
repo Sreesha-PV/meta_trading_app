@@ -63,6 +63,8 @@ class OrderTile extends StatelessWidget {
     final isBuy = position.side == 1;
     final entryPrice = position.orderPrice;
     final volume = position.positionQty;
+    double _previousProfit = 0.0;
+    bool _isFirstBuild = true;
 
     final tradingController = Get.find<TradingChartController>();
     final ticker = tradingController.tickers[instrument.code.toUpperCase()];
@@ -78,6 +80,11 @@ class OrderTile extends StatelessWidget {
       pointValue: pointValue,
       currencyRate: currencyRate,
     );
+
+    if (_isFirstBuild) {
+      _previousProfit = profit;
+      _isFirstBuild = false;
+    }
 
     // print("Profit $profit");
     final profitColor = getProfitColor(profit);
@@ -228,18 +235,25 @@ class OrderTile extends StatelessWidget {
                             ],
                           ),
                           trailing: TweenAnimationBuilder<double>(
-                            duration: const Duration(milliseconds: 400),
+                            duration: const Duration(milliseconds: 300),
                             curve: Curves.easeOutCubic,
-                            tween: Tween<double>(begin: profit, end: profit),
+                            tween: Tween<double>(
+                              begin: _previousProfit,
+                              end: profit,
+                            ),
+                            onEnd: () {
+                              _previousProfit = profit;
+                            },
                             builder: (context, animatedValue, child) {
-                              final animatedProfitColor =
-                                  animatedValue >= 0 ? Colors.blue : Colors.red;
                               return Text(
                                 '${animatedValue >= 0 ? '+' : ''}${animatedValue.toStringAsFixed(2)}',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
-                                  color: animatedProfitColor,
+                                  color:
+                                      animatedValue >= 0
+                                          ? Colors.blue
+                                          : Colors.red,
                                 ),
                               );
                             },

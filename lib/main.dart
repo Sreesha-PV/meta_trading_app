@@ -16,6 +16,9 @@ void main() async {
   // }
   // print('Main started');
   await dotenv.load(fileName: ".env");
+  await GetStorage.init('price_cache');
+  await GetStorage.init('ohlc_cache');
+  await GetStorage.init('ohlc_cache');
   await GetStorage.init();
   // Register GetX controller globally with required parameters
   // Get.put(

@@ -14,15 +14,55 @@ import 'package:netdania/app/modules/trade/helper/symbol_utils.dart';
 import 'package:netdania/app/getX/order_getX.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class TradingPage extends StatelessWidget {
+class TradingPage extends StatefulWidget {
   final String symbol;
   final InstrumentModel instrument;
+
+  const TradingPage({
+    super.key,
+    required this.symbol,
+    required this.instrument,
+  });
+
+  @override
+  State<TradingPage> createState() => _TradingPageState();
+}
+
+class _TradingPageState extends State<TradingPage>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  TradingPage({super.key, required this.symbol, required this.instrument});
+  late AnimationController _plAnimationController;
+  late Animation<double> _plAnimation;
+  double _previousTotalPL = 0.0;
+  bool _isFirstBuild = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _plAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _plAnimation = Tween<double>(begin: 0, end: 0).animate(
+      CurvedAnimation(
+        parent: _plAnimationController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchAndSubscribe();
+    });
+  }
+
+  @override
+  void dispose() {
+    _plAnimationController.dispose();
+    super.dispose();
+  }
 
   Future<void> _fetchAndSubscribe() async {
-    // Find controllers instead of creating new ones
     final positionController = Get.find<PositionsController>();
     final orderController = Get.find<OrderController>();
     final tradingController = Get.find<TradingChartController>();
@@ -35,18 +75,10 @@ class TradingPage extends StatelessWidget {
     if (userId != null) {
       final userIdInt = int.tryParse(userId);
       if (userIdInt != null) {
-        // Fetch orders once with userId - this should get all orders
         await orderController.fetchOrders(userIdInt, true);
       }
     }
 
-    // REMOVE THIS LOOP - it's causing multiple API calls
-    // for (var p in positionController.positionOrders) {
-    //   await orderController.fetchPendingOrders(p.accountId);
-    // }
-
-    // OR if you really need to fetch pending orders separately,
-    // get unique account IDs and fetch them in parallel:
     final uniqueAccountIds =
         positionController.positionOrders
             .map((p) => p.accountId)
@@ -74,11 +106,6 @@ class TradingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchAndSubscribe();
-    });
-
-    // Find existing controllers
     final positionController = Get.find<PositionsController>();
     final orderController = Get.find<OrderController>();
     final tradingController = Get.find<TradingChartController>();
@@ -145,11 +172,30 @@ class TradingPage extends StatelessWidget {
           tradingController.tickers,
           tradingController,
         );
-        return TweenAnimationBuilder<double>(
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeOutCubic,
-          tween: Tween<double>(begin: totalPL, end: totalPL),
-          builder: (context, animatedValue, child) {
+
+        if (_isFirstBuild) {
+          _previousTotalPL = totalPL;
+          _isFirstBuild = false;
+        }
+
+        if (totalPL != _previousTotalPL) {
+          _plAnimation = Tween<double>(
+            begin: _previousTotalPL,
+            end: totalPL,
+          ).animate(
+            CurvedAnimation(
+              parent: _plAnimationController,
+              curve: Curves.easeOutCubic,
+            ),
+          );
+          _plAnimationController.forward(from: 0);
+          _previousTotalPL = totalPL;
+        }
+
+        return AnimatedBuilder(
+          animation: _plAnimation,
+          builder: (context, child) {
+            final animatedValue = _plAnimation.value;
             return Text(
               '${animatedValue.toStringAsFixed(2)} USD',
               style: TextStyle(

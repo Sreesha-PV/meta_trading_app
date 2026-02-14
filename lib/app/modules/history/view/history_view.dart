@@ -178,8 +178,6 @@
 //                 //     tradingController.tickers[order.instrumentId];
 //                 // final ticker = tradingController.tickers[order.instrumentId.toString()];
 
-
-
 //                 // final instrumentName = SymbolUtils.getInstrumentName(
 //                 //   order.instrumentId,
 //                 // );
@@ -648,14 +646,11 @@
 //           return 'Unknown';
 //       }
 //     } else if (type is String) {
-//       return type; 
+//       return type;
 //     }
 //     return 'Unknown';
 //   }
 // }
-
-
-
 
 // import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
@@ -841,7 +836,7 @@
 //                 final order = closedOrders[index];
 //                 final volume = order.orderQty;
 //                 final isBuy =
-//                     order.side == 'Buy' || order.side == 2; 
+//                     order.side == 'Buy' || order.side == 2;
 //                 print("Closed order details: ${order.instrumentId}");
 //                 final instrument =
 //                     tradingController.getInstrument(order.instrumentId) ??
@@ -1310,13 +1305,11 @@
 //           return 'Unknown';
 //       }
 //     } else if (type is String) {
-//       return type; 
+//       return type;
 //     }
 //     return 'Unknown';
 //   }
 // }
-
-
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -1474,7 +1467,6 @@ class HistoryPage extends StatelessWidget {
   Widget _buildClosedPositionsTab(
     TradingChartController tradingController,
     OrderController orderController,
-
   ) {
     // Fetch closed orders when building the tab
     final accountController = Get.find<AccountController>();
@@ -1504,7 +1496,7 @@ class HistoryPage extends StatelessWidget {
                 // final volume = order.orderQty;
                 final qty = order.settledQty;
                 // final isBuy =
-                //     order.side == 'Buy' || order.side == 2; 
+                //     order.side == 'Buy' || order.side == 2;
                 // print("Closed order details: ${order.instrumentId}");
                 final instrument =
                     tradingController.getInstrument(order.instrumentId) ??
@@ -1512,6 +1504,7 @@ class HistoryPage extends StatelessWidget {
                       instrumentId: order.instrumentId,
                       name: 'UNKNOWN',
                       code: 'UNKNOWN',
+                      decimalPlaces: 0,
                     );
 
                 final symbolKey = instrument.code.toUpperCase();
@@ -1533,7 +1526,7 @@ class HistoryPage extends StatelessWidget {
                 //             volume *
                 //             (isBuy ? 1 : -1)
                 //         : 0.0;
-                  final profit =order.settledPl;
+                final profit = order.settledPl;
                 final profitColor =
                     profit > 0
                         ? AppColors.up
@@ -1563,12 +1556,14 @@ class HistoryPage extends StatelessWidget {
                   //     fontWeight: FontWeight.bold,
                   //   ),
                   // ),
-                  subtitle: Text(order.settlementDate,
+                  subtitle: Text(
+                    order.settlementDate,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                       color: AppColors.textPrimary,
-                    ),),
+                    ),
+                  ),
                   // trailing: Text(
                   //   '${profit >= 0 ? '+' : ''}${order.orderPrice.toStringAsFixed(2)}',
                   //   style: TextStyle(
@@ -1577,21 +1572,22 @@ class HistoryPage extends StatelessWidget {
                   //     color: profitColor,
                   //   ),
                   // ),
-                trailing: Text('${order.settledPl}',
-                   style: TextStyle(
+                  trailing: Text(
+                    '${order.settledPl}',
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                       color: profitColor,
-                    ),),
+                    ),
+                  ),
                 );
-                
               },
             ),
           ),
-          Divider(height: 1, thickness: 1, color: Colors.grey[300])
+          Divider(height: 1, thickness: 1, color: Colors.grey[300]),
         ],
       );
-    } );
+    });
   }
 
   // // CLOSED POSITIONS TAB
@@ -1714,6 +1710,7 @@ class HistoryPage extends StatelessWidget {
                       instrumentId: order.instrumentId,
                       name: 'UNKNOWN',
                       code: 'UNKNOWN',
+                      decimalPlaces: 0,
                     );
 
                 return Column(
@@ -1848,11 +1845,11 @@ class HistoryPage extends StatelessWidget {
     //   profit += (currentPrice - entryPrice) * volume * (isBuy ? 1 : -1);
     // }
 
-      for (final o in closedOrders) {
-    profit += o.settledPl;
-    commission += o.commissionPaid ?? 0;
-    swap += o.accumulatingStorage ?? 0;
-  }
+    for (final o in closedOrders) {
+      profit += o.settledPl;
+      commission += o.commissionPaid ?? 0;
+      swap += o.accumulatingStorage ?? 0;
+    }
 
     double balance = deposit + profit + swap + commission;
 
@@ -1996,7 +1993,7 @@ class HistoryPage extends StatelessWidget {
           return 'Unknown';
       }
     } else if (type is String) {
-      return type; 
+      return type;
     }
     return 'Unknown';
   }

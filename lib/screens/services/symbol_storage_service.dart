@@ -35,6 +35,7 @@ class SymbolStorageService {
       debugPrint('No user_id found in SharedPreferences');
       return [];
     }
+    print("Current User ID ${userId}");
     final data = _storage.read<List>(_getKey(userId));
     final symbols = data?.map((e) => e.toString()).toList() ?? [];
     debugPrint('Loaded ${symbols.length} symbols for user $userId');

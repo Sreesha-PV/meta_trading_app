@@ -1,20 +1,81 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:get_storage/get_storage.dart';
 import 'package:netdania/screens/services/authservices.dart';
 
 class OHLCService {
   static const String baseUrl = 'https://uat.ax1systems.com/ohcl/api/v1';
   static final AuthService _authService = AuthService();
+  
+  // Lazy initialization to ensure GetStorage is ready
+  static GetStorage? _storageInstance;
+  static GetStorage get _storage {
+    _storageInstance ??= GetStorage('ohlc_cache');
+    return _storageInstance!;
+  }
+  
+  // Extended cache expiry - data stays fresh for 1 hour but remains accessible forever
+  static const Duration _cacheFreshnessThreshold = Duration(hours: 1);
+  static const int _maxCachedCandles = 1000;
 
-  /// Fetch OHLC data from API
+  /// Fetch OHLC data from API with persistent caching
   ///
   /// [symbol] - Trading symbol (e.g., 'AUDCAD', 'XAUUSD')
-  /// [resolution] - Time resolution ('1m', '5m', '15m', '30m', '1h', '4h', '1d')
+  /// [resolution] - Time resolution ('1m', '5m', '15m', '30m', '1h', '4h', '1D')
   /// [from] - Start timestamp (Unix seconds)
   /// [to] - End timestamp (Unix seconds)
+  /// [forceRefresh] - Force API call, skip cache
   static Future<List<Map<String, dynamic>>> fetchOHLC({
     required String symbol,
-    String resolution = '1m',
+    String resolution = '15m',
+    int? from,
+    int? to,
+    bool forceRefresh = false,
+  }) async {
+    final cacheKey = _getCacheKey(symbol, resolution);
+    
+    if (!forceRefresh) {
+      final cachedData = _getCachedData(cacheKey);
+      if (cachedData != null && cachedData.isNotEmpty) {
+        final cacheInfo = getCacheInfo(symbol, resolution);
+        final ageMinutes = (cacheInfo['age_seconds'] as int) ~/ 60;
+        
+        print('📦 Using cached data for $symbol ($resolution): ${cachedData.length} candles (age: ${ageMinutes}m)');
+        
+        // Only refresh in background if cache is getting stale (> 1 hour)
+        if (cacheInfo['is_stale'] == true) {
+          print('🔄 Cache is stale, refreshing in background');
+          _refreshCacheInBackground(
+            symbol: symbol,
+            resolution: resolution,
+            from: from,
+            to: to,
+            cacheKey: cacheKey,
+          );
+        }
+        
+        return cachedData;
+      }
+    }
+
+    print('🌐 Fetching fresh data for $symbol ($resolution)');
+    final data = await _fetchFromAPI(
+      symbol: symbol,
+      resolution: resolution,
+      from: from,
+      to: to,
+    );
+
+    if (data.isNotEmpty) {
+      _cacheData(cacheKey, data);
+    }
+
+    return data;
+  }
+
+  static Future<List<Map<String, dynamic>>> _fetchFromAPI({
+    required String symbol,
+    String resolution = '15m',
     int? from,
     int? to,
   }) async {
@@ -23,12 +84,17 @@ class OHLCService {
       if (token == null) {
         throw Exception('Session expired. Please login again.');
       }
+      
       final toTimestamp = to ?? DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final fromTimestamp =
-          from ?? (toTimestamp - (5 * 60 * 60)); // Default: last 5 hours
+      final fromTimestamp = from ?? _calculateDefaultFrom(toTimestamp, resolution);
+
+      final shouldIncludeResolution =
+          !['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'].contains(resolution);
 
       final url = Uri.parse(
-        '$baseUrl/ohcl-limit-less?symbol=$symbol&resolution=$resolution&from=$fromTimestamp&to=$toTimestamp',
+        shouldIncludeResolution
+            ? '$baseUrl/ohcl-limit-less?symbol=$symbol&resolution=$resolution&from=$fromTimestamp&to=$toTimestamp'
+            : '$baseUrl/ohcl-limit-less?symbol=$symbol&resolution=$resolution',
       );
 
       print('📡 Fetching OHLC data: $url');
@@ -45,44 +111,41 @@ class OHLCService {
         final jsonData = jsonDecode(response.body);
 
         List<dynamic> rawData = [];
-        
-        // Handle different response formats
+
         if (jsonData is Map<String, dynamic> && jsonData.containsKey('data')) {
           rawData = jsonData['data'] as List<dynamic>;
         } else if (jsonData is List) {
           rawData = jsonData;
         }
 
-        // Transform and validate the data
         final List<Map<String, dynamic>> transformedData = [];
-        
+
         for (var item in rawData) {
           try {
-            // Validate all required fields exist
-            if (item['time'] == null || 
-                item['open'] == null || 
-                item['high'] == null || 
-                item['low'] == null || 
+            if (item['time'] == null ||
+                item['open'] == null ||
+                item['high'] == null ||
+                item['low'] == null ||
                 item['close'] == null) {
               print('⚠️ Skipping candle with missing fields: $item');
               continue;
             }
 
-            // Parse and validate each value
             final time = _parseTime(item['time']);
             final open = _parseDouble(item['open']);
             final high = _parseDouble(item['high']);
             final low = _parseDouble(item['low']);
             final close = _parseDouble(item['close']);
 
-            // Validate OHLC relationship (high >= low, etc.)
             if (high < low) {
               print('⚠️ Invalid OHLC: high < low for candle at time $time');
               continue;
             }
 
             if (open < low || open > high || close < low || close > high) {
-              print('⚠️ Invalid OHLC: open/close outside high/low range at time $time');
+              print(
+                '⚠️ Invalid OHLC: open/close outside high/low range at time $time',
+              );
               continue;
             }
 
@@ -95,15 +158,18 @@ class OHLCService {
             });
           } catch (e) {
             print('⚠️ Error parsing candle: $e - Item: $item');
-            continue; // Skip invalid candles
+            continue;
           }
         }
 
-        // Sort by time ascending (oldest to newest)
-        transformedData.sort((a, b) => (a['time'] as int).compareTo(b['time'] as int));
+        transformedData.sort(
+          (a, b) => (a['time'] as int).compareTo(b['time'] as int),
+        );
 
-        print('✅ Transformed ${transformedData.length} valid candles from ${rawData.length} raw candles');
-        
+        print(
+          '✅ Transformed ${transformedData.length} valid candles from ${rawData.length} raw candles',
+        );
+
         if (transformedData.isNotEmpty) {
           print('📊 First candle: ${transformedData.first}');
           print('📊 Last candle: ${transformedData.last}');
@@ -122,7 +188,267 @@ class OHLCService {
     }
   }
 
-  /// Parse time value to int (Unix timestamp in seconds)
+  static String _getCacheKey(String symbol, String resolution) {
+    return 'ohlc_${symbol}_$resolution';
+  }
+
+  /// Get cached data - NEVER expires, always returns if exists
+  static List<Map<String, dynamic>>? _getCachedData(String cacheKey) {
+    try {
+      final cacheEntry = _storage.read(cacheKey);
+      if (cacheEntry == null) {
+        print('📭 No cache found for $cacheKey');
+        return null;
+      }
+
+      final Map<String, dynamic> cached = Map<String, dynamic>.from(cacheEntry);
+      
+      // Check if data exists
+      if (!cached.containsKey('data')) {
+        print('⚠️ Cache corrupted for $cacheKey - missing data field');
+        return null;
+      }
+
+      final List<dynamic> rawData = cached['data'] as List<dynamic>;
+      final List<Map<String, dynamic>> data = rawData
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+
+      // Calculate age for logging
+      if (cached.containsKey('timestamp')) {
+        final cachedTime = DateTime.parse(cached['timestamp'] as String);
+        final age = DateTime.now().difference(cachedTime);
+        final ageMinutes = age.inMinutes;
+        
+        if (age > _cacheFreshnessThreshold) {
+          print('📦 Cache exists but stale for $cacheKey (age: ${ageMinutes}m, ${data.length} candles)');
+        } else {
+          print('📦 Cache fresh for $cacheKey (age: ${ageMinutes}m, ${data.length} candles)');
+        }
+      }
+
+      return data;
+    } catch (e) {
+      print('⚠️ Error reading cache for $cacheKey: $e');
+      return null;
+    }
+  }
+
+  /// Cache data permanently until manually cleared
+  static void _cacheData(String cacheKey, List<Map<String, dynamic>> data) {
+    try {
+      final dataToCache = data.length > _maxCachedCandles
+          ? data.sublist(data.length - _maxCachedCandles)
+          : data;
+
+      final cacheEntry = {
+        'timestamp': DateTime.now().toIso8601String(),
+        'cached_at_unix': DateTime.now().millisecondsSinceEpoch,
+        'data': dataToCache,
+        'version': 1, // For future migration support
+      };
+
+      _storage.write(cacheKey, cacheEntry);
+      print('💾 Cached ${dataToCache.length} candles for $cacheKey (persistent storage)');
+    } catch (e) {
+      print('⚠️ Error caching data for $cacheKey: $e');
+    }
+  }
+
+  /// Background refresh only updates cache, doesn't affect current display
+  static void _refreshCacheInBackground({
+    required String symbol,
+    required String resolution,
+    int? from,
+    int? to,
+    required String cacheKey,
+  }) {
+    Future.microtask(() async {
+      try {
+        print('🔄 Background refresh started for $symbol ($resolution)');
+        final freshData = await _fetchFromAPI(
+          symbol: symbol,
+          resolution: resolution,
+          from: from,
+          to: to,
+        );
+
+        if (freshData.isNotEmpty) {
+          _cacheData(cacheKey, freshData);
+          print('✅ Background refresh completed for $symbol ($resolution)');
+        }
+      } catch (e) {
+        print('⚠️ Background refresh failed for $symbol ($resolution): $e');
+      }
+    });
+  }
+
+  /// Clear cache for specific symbol and resolution
+  static void clearCache(String symbol, String resolution) {
+    final cacheKey = _getCacheKey(symbol, resolution);
+    _storage.remove(cacheKey);
+    print('🗑️ Cleared cache for $symbol ($resolution)');
+  }
+
+  /// Clear all OHLC cache (only on manual request)
+  static void clearAllCache() {
+    final keys = _storage.getKeys();
+    int count = 0;
+    for (var key in keys) {
+      if (key.startsWith('ohlc_')) {
+        _storage.remove(key);
+        count++;
+      }
+    }
+    print('🗑️ Cleared $count OHLC cache entries');
+  }
+
+  /// Get detailed cache information
+  static Map<String, dynamic> getCacheInfo(String symbol, String resolution) {
+    final cacheKey = _getCacheKey(symbol, resolution);
+    final cacheEntry = _storage.read(cacheKey);
+    
+    if (cacheEntry == null) {
+      return {
+        'cached': false,
+        'exists': false,
+      };
+    }
+
+    try {
+      final Map<String, dynamic> cached = Map<String, dynamic>.from(cacheEntry);
+      final cachedTime = DateTime.parse(cached['timestamp'] as String);
+      final List<dynamic> rawData = cached['data'] as List<dynamic>;
+      final age = DateTime.now().difference(cachedTime);
+
+      return {
+        'cached': true,
+        'exists': true,
+        'timestamp': cached['timestamp'],
+        'age_seconds': age.inSeconds,
+        'age_minutes': age.inMinutes,
+        'age_hours': age.inHours,
+        'is_fresh': age <= _cacheFreshnessThreshold,
+        'is_stale': age > _cacheFreshnessThreshold,
+        'candle_count': rawData.length,
+        'oldest_candle': rawData.isNotEmpty ? rawData.first : null,
+        'newest_candle': rawData.isNotEmpty ? rawData.last : null,
+      };
+    } catch (e) {
+      print('⚠️ Error getting cache info for $cacheKey: $e');
+      return {
+        'cached': false,
+        'exists': true,
+        'error': e.toString(),
+      };
+    }
+  }
+
+  /// Get all cached symbols
+  static List<Map<String, dynamic>> getAllCachedSymbols() {
+    final keys = _storage.getKeys();
+    final List<Map<String, dynamic>> cachedSymbols = [];
+
+    for (var key in keys) {
+      if (key.startsWith('ohlc_')) {
+        final parts = key.replaceFirst('ohlc_', '').split('_');
+        if (parts.length >= 2) {
+          final symbol = parts.sublist(0, parts.length - 1).join('_');
+          final resolution = parts.last;
+          final info = getCacheInfo(symbol, resolution);
+          
+          cachedSymbols.add({
+            'symbol': symbol,
+            'resolution': resolution,
+            'cache_key': key,
+            ...info,
+          });
+        }
+      }
+    }
+
+    return cachedSymbols;
+  }
+
+  /// Verify cache integrity
+  static Future<Map<String, dynamic>> verifyCacheIntegrity() async {
+    final allCached = getAllCachedSymbols();
+    int valid = 0;
+    int corrupted = 0;
+    int empty = 0;
+
+    for (var cached in allCached) {
+      if (cached['exists'] == true && cached['cached'] == true) {
+        if (cached['candle_count'] > 0) {
+          valid++;
+        } else {
+          empty++;
+        }
+      } else {
+        corrupted++;
+      }
+    }
+
+    return {
+      'total_cached': allCached.length,
+      'valid': valid,
+      'empty': empty,
+      'corrupted': corrupted,
+      'storage_keys': _storage.getKeys().length,
+    };
+  }
+
+  static int _calculateDefaultFrom(int toTimestamp, String resolution) {
+    const candlesToFetch = 300;
+
+    int secondsPerCandle;
+    switch (resolution) {
+      case '1m':
+        secondsPerCandle = 60;
+        break;
+      case '5m':
+        secondsPerCandle = 300;
+        break;
+      case '15m':
+        secondsPerCandle = 900;
+        break;
+      case '30m':
+        secondsPerCandle = 1800;
+        break;
+      case '1h':
+        secondsPerCandle = 3600;
+        break;
+      case '4h':
+        secondsPerCandle = 14400;
+        break;
+      case '1D':
+        secondsPerCandle = 86400;
+        break;
+      case '1W':
+        secondsPerCandle = 604800;
+        break;
+      case '1M':
+        secondsPerCandle = 2592000;
+        break;
+      case '3M':
+        secondsPerCandle = 7776000;
+        break;
+      case '6M':
+        secondsPerCandle = 15552000;
+        break;
+      case '1Y':
+        secondsPerCandle = 31536000;
+        break;
+      case '5Y':
+        secondsPerCandle = 157680000;
+        break;
+      default:
+        secondsPerCandle = 60;
+    }
+
+    return toTimestamp - (secondsPerCandle * candlesToFetch);
+  }
+
   static int _parseTime(dynamic value) {
     if (value == null) throw Exception('Time is null');
     if (value is int) return value;
@@ -131,7 +457,6 @@ class OHLCService {
     throw Exception('Invalid time format: $value');
   }
 
-  /// Parse double value safely
   static double _parseDouble(dynamic value) {
     if (value == null) throw Exception('Value is null');
     if (value is double) return value;
@@ -144,7 +469,6 @@ class OHLCService {
     throw Exception('Invalid number format: $value');
   }
 
-  /// Get available timeframes
   static List<Map<String, String>> getTimeframes() {
     return [
       {'label': '1m', 'value': '1m', 'seconds': '60'},
@@ -153,11 +477,16 @@ class OHLCService {
       {'label': '30m', 'value': '30m', 'seconds': '1800'},
       {'label': '1H', 'value': '1h', 'seconds': '3600'},
       {'label': '4H', 'value': '4h', 'seconds': '14400'},
-      {'label': '1D', 'value': '1d', 'seconds': '86400'},
+      {'label': '1D', 'value': '1D', 'seconds': '86400'},
+      {'label': '1W', 'value': '1W', 'seconds': '604800'},
+      {'label': '1M', 'value': '1M', 'seconds': '2592000'},
+      {'label': '3M', 'value': '3M', 'seconds': '7776000'},
+      {'label': '6M', 'value': '6M', 'seconds': '15552000'},
+      {'label': '1Y', 'value': '1Y', 'seconds': '31536000'},
+      {'label': '5Y', 'value': '5Y', 'seconds': '157680000'},
     ];
   }
 
-  /// Get available indicators
   static List<Map<String, String>> getIndicators() {
     return [
       {'label': 'None', 'value': 'none'},

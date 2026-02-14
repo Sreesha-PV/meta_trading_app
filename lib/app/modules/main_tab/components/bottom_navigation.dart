@@ -14,7 +14,7 @@ class BottomNavBar extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         ValueListenableBuilder<int>(
-          valueListenable:MainTabView.selectedIndexNotifier,
+          valueListenable: MainTabView.selectedIndexNotifier,
           builder: (context, index, _) {
             return ValueListenableBuilder<bool>(
               valueListenable: MainTabView.isMoreExpandedNotifier,
@@ -52,15 +52,15 @@ class BottomNavBar extends StatelessWidget {
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.show_chart_rounded),
-                      label: 'Trade'
+                      label: 'Trade',
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.history),
-                      label: 'History'
+                      label: 'History',
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.chat_bubble_outline_rounded),
-                      label: 'Message'
+                      label: 'Message',
                     ),
                     // BottomNavigationBarItem(
                     //   icon: Icon(
@@ -76,7 +76,6 @@ class BottomNavBar extends StatelessWidget {
             );
           },
         ),
-      
       ],
     );
   }
@@ -92,15 +91,19 @@ class _MoreNavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icon, 
-        // color: Colors.grey
-        color:AppColors.textSecondary
+        Icon(
+          icon,
+          // color: Colors.grey
+          color: AppColors.textSecondary,
         ),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(
-          // color: Colors.grey
-          color:AppColors.textSecondary
-          )),
+        Text(
+          label,
+          style: const TextStyle(
+            // color: Colors.grey
+            color: AppColors.textSecondary,
+          ),
+        ),
       ],
     );
   }

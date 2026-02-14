@@ -4,11 +4,11 @@ import 'package:netdania/screens/services/symbol_storage_service.dart';
 
 class SymbolFilterController extends GetxController {
   final SymbolStorageService _symbolStorage = SymbolStorageService();
-  
+
   final RxList<String> _selectedSymbols = <String>[].obs;
   final RxBool _isLoading = true.obs;
-  
-  RxList<String> get selectedSymbolsRx => _selectedSymbols;  
+
+  RxList<String> get selectedSymbolsRx => _selectedSymbols;
   List<String> get selectedSymbols => _selectedSymbols;
   RxBool get isLoading => _isLoading;
 
@@ -16,6 +16,13 @@ class SymbolFilterController extends GetxController {
   void onInit() {
     super.onInit();
     loadSelectedSymbols();
+  }
+
+  @override
+  void onClose() {
+    _selectedSymbols.clear();
+    debugPrint('🧹 SymbolFilterController closed and cleared');
+    super.onClose();
   }
 
   Future<void> loadSelectedSymbols() async {

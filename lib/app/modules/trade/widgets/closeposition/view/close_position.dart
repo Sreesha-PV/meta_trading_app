@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 // import 'package:fl_chart/fl_chart.dart';
@@ -112,28 +113,7 @@ class ClosePositionPage extends StatelessWidget {
               child: _buildOrderBody(context, c, EdgeInsets.zero),
             ),
             const SizedBox(width: 24),
-            // Expanded(
-            //   flex: 3,
-            //   child: Container(
-            //     padding: const EdgeInsets.all(16),
-            //     decoration: BoxDecoration(
-            //       color: Colors.grey[50],
-            //       borderRadius: BorderRadius.circular(12),
-            //       border: Border.all(color: Colors.grey[300]!),
-            //     ),
-            //     child: Obx(() {
-            //       final data = c.tradingController.getPriceHistory(
-            //         c.symbol.value,
-            //       );
-            //       if (data.isEmpty) {
-            //         return const Center(
-            //           child: Text("Waiting for live data..."),
-            //         );
-            //       }
-            //       // return LineChartWidget(priceHistory: data);
-            //     }),
-            //   ),
-            // ),
+           
           ],
         ),
       ),
@@ -159,82 +139,112 @@ class ClosePositionPage extends StatelessWidget {
           const SizedBox(height: 8),
           _buildVolumeSelector(context, c),
           const SizedBox(height: 10),
+          Row(
+  children: [
+    SizedBox(
+      width: MediaQuery.of(context).size.width * 0.5,
+      child: Text(
+        'Stop Loss',
+        style: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 17,
+        ),
+      ),
+    ),
+    Expanded(
+      flex: 3,
+      child: _priceAdjuster(
+        c,
+        'SL',
+        AppColors.down,
+        c.adjustSl,
+        c.slController,
+      ),
+    ),
+  ],
+),
 
-          //           Obx(() {
-          //             // final ticker = c.tradingController.getTicker(c.symbol.value);
-
-          //             // final ticker = c.tradingController.getTickerSafe(symbol);
-
-          //             // final sell = double.tryParse(ticker?['bid']?.toString() ?? '0') ?? 0;
-          //             // final buy = double.tryParse(ticker?['ask']?.toString() ?? '0') ?? 0;
-
-          //             //   final sell = (ticker?['bid'] ?? 0).toDouble();
-          //             // final buy  = (ticker?['ask'] ?? 0).toDouble();
-
-          //             // final sell = safeDouble(ticker?['bid']);
-          //             // final buy = safeDouble(ticker?['ask']);
-
-          //             // final color = c.tradingController.isPriceUp ? Colors.blue : Colors.red;
-          //             final color =
-          //                 c.tradingController.isPriceUp ? AppColors.up : AppColors.down;
-
-          // final instrumentName = SymbolUtils.getInstrumentName(
-          //               position.instrumentId,
-          //             );
-          //                  final symbolKey = PriceHelper.normalizeSymbol(instrumentName);
-          //             final ticker = tradingController.tickers[symbolKey];
-
-          //             final sell = safeDouble(ticker?['bid']);
-          //             final buy = safeDouble(ticker?['ask']);
-          //             return Row(
-          //               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //               children: [
-          //                 _formattedPrice(sell, color),
-          //                 _formattedPrice(buy, color),
-          //               ],
-          //             );
-          //           }),
-          Obx(() {
-            final symbolKey = instrument.code.toUpperCase();
-            final ticker = tradingController.getTickerSafe(symbolKey);
-
-            if (ticker == null) {
-              return const Text('—');
-            }
-
-            final sell = safeDouble(ticker['bid']);
-            final buy = safeDouble(ticker['ask']);
-
-            final isUp = tradingController.isPriceUpForSymbol(symbolKey);
-            final color = isUp ? AppColors.up : AppColors.down;
-
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _formattedPrice(sell, color),
-                _formattedPrice(buy, color),
-              ],
-            );
-          }),
-
-          const SizedBox(height: 10),
-          _buildSLTPRow(c),
-          const SizedBox(height: 10),
-          _buildFillPolicyDropdown(c, context),
-          const SizedBox(height: 10),
-          Expanded(
-            child: Obx(() {
-              final prices = c.tradingController.getPriceHistory(
-                c.symbol.value,
-              );
-              if (prices.isEmpty) {
-                return const Center(child: Text("Waiting for live data..."));
-              }
-              // return LineChartWidget(priceHistory: prices);
-              return Text('Chart');
-            }),
+          SizedBox(height: 16,),
+          Row(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                child: Text(
+                  'Take Profit',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w400,
+                  ),),
+              ),
+              Expanded(child: _priceAdjuster(
+                c,
+                "TP",
+                AppColors.success, 
+                c.adjustTp, 
+                c.tpController
+              )
+              )
+            ],
           ),
-          const SizedBox(height: 10),
+
+         
+          const SizedBox(height: 16),
+          // _buildFillPolicyDropdown(c, context),
+          Row(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  child: Text(
+                    'Expiration',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+
+              Expanded(
+                  child: _buildFillPolicyDropdown(c, context),
+                ),
+              ],
+            ),
+
+          const SizedBox(height: 16),
+
+           Container(
+            padding: EdgeInsets.symmetric(horizontal: 0 ,vertical: 16),
+            decoration: BoxDecoration(
+              color: AppColors.lightNeutral,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Obx(() {
+              final symbolKey = instrument.code.toUpperCase();
+              final ticker = tradingController.getTickerSafe(symbolKey);
+             
+              if (ticker == null) {
+                return const Text('—');
+              }
+             
+              final sell = safeDouble(ticker['bid']);
+              final buy = safeDouble(ticker['ask']);
+             
+              final isUp = tradingController.isPriceUpForSymbol(symbolKey);
+              final color = isUp ? AppColors.up : AppColors.down;
+             
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _formattedPrice(sell, color),
+                  _formattedPrice(buy, color),
+                ],
+              );
+                       }),
+           ),
+
+          
+          const SizedBox(height: 16),
           _buildBottomButtons(c),
         ],
       ),
@@ -267,23 +277,10 @@ class ClosePositionPage extends StatelessWidget {
             ),
             const SizedBox(height: 4),
 
-            // Second line: symbol, side, volume, and live price
             Obx(() {
-              // final ticker = c.tradingController.getTickerSafe(c.symbol.value);
-              // final bid =
-              //     double.tryParse(ticker?['bid']?.toString() ?? '0') ?? 0.0;
-              // final ask =
-              //     double.tryParse(ticker?['ask']?.toString() ?? '0') ?? 0.0;
-              // final price = (bid + ask) / 2;
-
-              // Side color & label — same as in OrderTile
-              // final side = _getSideLabel(c.selectedOrderType.value);
+          
               final side = _getSideLabel(position.side);
-              // final isBuy = side == 'Buy';
-              // final isBuy = position.side == 1;
-              // final isSell = side == 'Sell';
-              // final color = isBuy ? Colors.blue : Colors.red;
-              // final color = isBuy ? AppColors.up : AppColors.down;
+              
               return Row(
                 children: [
                   // Symbol + Side + Volume
@@ -334,17 +331,7 @@ class ClosePositionPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // const SizedBox(width: 8),
-                  // // Current price
-                  // Text(
-                  //   price == 0 ? '—' : '@ ${price.toStringAsFixed(5)}',
-                  //   style: const TextStyle(
-                  //     fontSize: 14,
-                  //     // color: Colors.grey,
-                  //     color: AppColors.textSecondary,
-                  //     fontWeight: FontWeight.w500,
-                  //   ),
-                  // ),
+                 
                 ],
               );
             }),
@@ -354,12 +341,7 @@ class ClosePositionPage extends StatelessWidget {
     );
   }
 
-  // / Helper to match OrderTile style
-  // String _getSideLabel(String orderType) {
-  //   if (orderType.toLowerCase().contains('buy')) return 'Buy';
-  //   if (orderType.toLowerCase().contains('sell')) return 'Sell';
-  //   return 'Unknown';
-  // }
+ 
 
   String _getSideLabel(dynamic side) {
     if (side is int) {
@@ -376,68 +358,83 @@ class ClosePositionPage extends StatelessWidget {
     return 'Unknown';
   }
 
-  Widget _buildVolumeSelector(BuildContext context, PlaceOrderController c) {
-    final width = MediaQuery.of(context).size.width;
 
-    // Responsive adjustments
-    final bool isMobile = width < 600;
-    final bool isTablet = width >= 600 && width < 1100;
-    final bool isDesktop = width >= 1100;
-
-    final double fontSize = isMobile ? 14 : (isTablet ? 15 : 16);
-    final double spacing = isMobile ? 8 : (isTablet ? 10 : 12);
-    final double volumeFontSize = isMobile ? 16 : (isTablet ? 18 : 20);
-
+   Widget _buildVolumeSelector(BuildContext context, PlaceOrderController c) {
     return Center(
       child: Container(
         constraints: const BoxConstraints(maxWidth: 600),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Horizontal scrolling if too wide
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Obx(
-                () => Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _volumeButton(c, '-0.5', -0.5, fontSize),
-                    SizedBox(width: spacing),
-                    _volumeButton(c, '-0.1', -0.1, fontSize),
-                    SizedBox(width: spacing),
-                    _volumeButton(c, '-0.01', -0.01, fontSize),
-                    SizedBox(width: spacing),
-                    Column(
-                      children: [
-                        Text(
-                          c.volume.value.toStringAsFixed(2),
+            Padding(padding: const EdgeInsets.only(bottom: 8)),
+
+            Obx(
+              () => Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _volumeButton(c, '-0.5', -0.5),
+                  _volumeButton(c, '-0.1', -0.1),
+
+                  c.isEditingVolume.value
+                      ? Container(
+                        width: 100,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: CupertinoTextField(
+                          controller: c.volumeTextController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          autofocus: true,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
-                            // color: Colors.black,
-                            // color: AppColors.background,
                             color: AppColors.textPrimary,
-                            fontSize: volumeFontSize,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          onSubmitted: (value) {
+                            final newVol = double.tryParse(value);
+                            if (newVol != null && newVol >= 0.01) {
+                              c.volume.value = newVol;
+                            }
+                            c.isEditingVolume.value = false;
+                          },
+                        ),
+                      )
+                      : GestureDetector(
+                        onTap: () {
+                          c.volumeTextController.text = c.volume.value
+                              .toStringAsFixed(2);
+                          c.isEditingVolume.value = true;
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            c.volume.value.toStringAsFixed(2),
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                    SizedBox(width: spacing),
-                    _volumeButton(c, '+0.01', 0.01, fontSize),
-                    SizedBox(width: spacing),
-                    _volumeButton(c, '+0.1', 0.1, fontSize),
-                    SizedBox(width: spacing),
-                    _volumeButton(c, '+0.5', 0.5, fontSize),
-                  ],
-                ),
-              ),
-            ),
+                      ),
 
-            // Divider
-            Container(
-              margin: const EdgeInsets.only(top: 6),
-              height: 1,
-              width: double.infinity,
-              color: Colors.grey[300],
+                  _volumeButton(c, '+0.1', 0.1),
+                  _volumeButton(c, '+0.5', 0.5),
+                ],
+              ),
             ),
           ],
         ),
@@ -445,57 +442,32 @@ class ClosePositionPage extends StatelessWidget {
     );
   }
 
-  /// Helper for volume buttons
-  Widget _volumeButton(
-    PlaceOrderController c,
-    String label,
-    double change,
-    double fontSize,
-  ) {
-    return TextButton(
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        minimumSize: const Size(50, 30),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-      onPressed: () => c.changeVolume(change),
-      child: Text(
-        label,
-        style: TextStyle(
-          // color: Colors.blue,
-          color: AppColors.info,
-          fontSize: fontSize,
-        ),
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
 
-  Widget _buildSLTPRow(PlaceOrderController c) {
-    return Row(
-      children: [
-        Expanded(
-          child: _priceAdjuster(
-            c,
-            "SL",
-            //  Colors.red,
-            AppColors.down,
-            c.adjustSl,
-            c.slController,
+   Widget _volumeButton(PlaceOrderController c, String label, double delta) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      minSize: 0,
+      onPressed: () {
+        final newVol = c.volume.value + delta;
+        if (newVol >= 0.01) {
+          c.volume.value = newVol;
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          // border: Border.all(color: AppColors.primary, width: 1.5),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: AppColors.primary,
+            fontSize: 17,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _priceAdjuster(
-            c,
-            "TP",
-            //  Colors.green,
-            AppColors.success,
-            c.adjustTp,
-            c.tpController,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -566,46 +538,36 @@ class ClosePositionPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Fill Policy',
-              style: TextStyle(
-                fontSize: 16,
-                // color: Colors.black
-                color: AppColors.textPrimary,
-              ),
-            ),
-            // Spacer(),
-            Obx(
-              () => DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: c.selectedFillPolicy.value,
-                  onChanged: (v) => c.selectedFillPolicy.value = v!,
-                  items:
-                      policies
-                          .map(
-                            (val) => DropdownMenuItem(
-                              value: val,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  val,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    // color: Colors.black
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
+        Obx(
+          () => DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: c.selectedFillPolicy.value,
+              alignment: Alignment.centerRight,
+              dropdownColor: AppColors.background,              
+              onChanged: (v) => c.selectedFillPolicy.value = v!,
+              items:
+                  policies
+                      .map(
+                        (val) => DropdownMenuItem(
+                          value: val,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              val,
+                              style: const TextStyle(
+                                // fontSize: 16,
+                                // color: Colors.black
+                                color: AppColors.textPrimary,
+                                overflow: TextOverflow.ellipsis
                               ),
                             ),
-                          )
-                          .toList(),
-                ),
-              ),
+                          ),
+                        ),
+                      )
+                      .toList(),
             ),
-          ],
+          ),
         ),
         Container(
           height: 1.5,
@@ -616,57 +578,28 @@ class ClosePositionPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderTypeSelector(CloseController c) {
-    const types = {1: 'Market Order', 2: 'Limit Order', 3: 'Stop Order'};
 
-    return Obx(
-      () => DropdownButton<int>(
-        value: c.selectedOrderType.value,
-        items:
-            types.entries
-                .map(
-                  (e) =>
-                      DropdownMenuItem<int>(value: e.key, child: Text(e.value)),
-                )
-                .toList(),
-        onChanged: (v) {
-          if (v != null) c.selectedOrderType.value = v;
-        },
-      ),
-    );
-  }
+
 
   Widget _buildBottomButtons(PlaceOrderController c) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        border: Border(top: BorderSide(color: Colors.grey[300]!)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+   
+      return Column(
         children: [
           Text(
             'Attention! The trade will be executed at market condition,difference with requested price may be significant!',
-            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[500],),
           ),
 
-          // Container(
-          //     margin: const EdgeInsets.only(top: 6),
-          //     height: 1,
-          //     color: Colors.grey[300]),
+          SizedBox(height: 16,),
           Row(
             children: [
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    //      orderController.removeProfitableActiveOrders(
-                    //   tradingController.tickers,
-                    // );
-
-                    //  orderController.closeOrder(order);
-
+                  
                     var closeController = Get.put(CloseController());
                     //  closeController.closePosition(
 
@@ -696,25 +629,31 @@ class ClosePositionPage extends StatelessWidget {
                       relatedPositionId: pos.positionId,
                     );
                   },
-                  child: Column(
-                    children: const [
-                      Text(
-                        'CLOSE POSITION',
-                        style: TextStyle(
-                          // color: Color(0xFFFFAB40),
-                          color: AppColors.iconText,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.down
+                    ),
+                    child: Column(
+                      children: const [
+                        Text(
+                          'CLOSE POSITION',
+                          style: TextStyle(
+                            // color: Color(0xFFFFAB40),
+                            color: AppColors.background,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ],
           ),
         ],
-      ),
+      // ),
     );
   }
 
@@ -738,16 +677,3 @@ class ClosePositionPage extends StatelessWidget {
     );
   }
 }
-
-
-// final double closeQty = c.volume.value;
-// final double openQty = position.positionQty;
-
-// if (closeQty <= 0 || closeQty > openQty) {
-//   Get.snackbar(
-//     'Invalid volume',
-//     'Close volume must be less than or equal to open volume',
-//   );
-//   return;
-// }
-

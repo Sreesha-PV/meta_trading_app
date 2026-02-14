@@ -111,7 +111,7 @@ class _MainTabViewState extends State<MainTabView> {
           // debugPrint('📊 WebSocket data: ${data['item_code']}');
         },
       );
-
+      Get.put<LocalWebSocketService>(_webSocketService!, permanent: true);
       debugPrint('✅ WebSocket service initialized');
     } catch (e) {
       debugPrint('❌ Error initializing WebSocket: $e');
@@ -120,7 +120,18 @@ class _MainTabViewState extends State<MainTabView> {
 
   @override
   void dispose() {
-    _webSocketService?.dispose();
+    if (_webSocketService != null) {
+      debugPrint('🔴 Disposing WebSocket service');
+      _webSocketService!.dispose();
+      try {
+        Get.delete<LocalWebSocketService>();
+        debugPrint('✅ WebSocket service removed from GetX');
+      } catch (e) {
+        debugPrint('⚠️ Could not remove WebSocket from GetX: $e');
+      }
+
+      _webSocketService = null;
+    }
     super.dispose();
   }
 
@@ -141,12 +152,12 @@ class _MainTabViewState extends State<MainTabView> {
 
       final instrument =
           tradingController.getInstrumentByCode(symbol) ??
-          InstrumentModel(instrumentId: 0, code: symbol, name: symbol);
+          InstrumentModel(instrumentId: 0, code: symbol, name: symbol, decimalPlaces: 2);
       //  final InstrumentModel? instrument = tradingController.getInstrument(
       //               position.instrumentId,
       //             );
 
-      final OrderController orderController = Get.put(OrderController());
+      // final OrderController orderController = Get.put(OrderController());
 
       //  final isExpanded =
       //           orderController.expandedOrderIndex.value == index;

@@ -1,490 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:netdania/app/config/theme/app_color.dart';
-// import 'package:netdania/app/getX/order_getX.dart';
-// import 'package:netdania/app/getX/trading_getX.dart';
-// import 'package:netdania/app/models/instrument_model.dart';
-// import 'package:netdania/app/models/order_get_model.dart';
-// import 'package:netdania/app/models/order_model.dart';
-// import 'package:netdania/app/modules/order/controller/place_order_controller.dart';
-// import 'package:netdania/utils/responsive_layout_helper.dart';
-
-// /// ---------------- VIEW ---------------- ///
-// class ModifyOrderPage extends StatelessWidget {
-//   final String symbol;
-//   final double currentBuyPrice;
-//   final double currentSellPrice;
-//   final PendingOrder order;
-//   final InstrumentModel instrument;
-
-//   final OrderController orderController = Get.put(OrderController());
-//   final TradingChartController tradingController = Get.put(
-//     TradingChartController(),
-//   );
-
-//   ModifyOrderPage({
-//     super.key,
-//     required this.symbol,
-//     required this.currentBuyPrice,
-//     required this.currentSellPrice,
-//     required this.order,
-//     required this.instrument,
-//   });
-
-//   double safeDouble(dynamic value) {
-//     if (value is double) return value;
-//     if (value is int) return value.toDouble();
-//     if (value is String) return double.tryParse(value) ?? 0.0;
-//     return 0.0;
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final c =
-//         Get.isRegistered<PlaceOrderController>()
-//             ? Get.find<PlaceOrderController>()
-//             : Get.put(PlaceOrderController());
-
-//     c.symbol.value = symbol;
-//     c.currentBuyPrice.value = currentBuyPrice;
-//     c.currentSellPrice.value = currentSellPrice;
-
-//     // Initialize with order values
-//     c.priceController.text = order.orderPrice.toStringAsFixed(5);
-//     // c.slController.text = order.stopLoss?.toStringAsFixed(5) ?? '';
-//     // c.tpController.text = order.takeProfit?.toStringAsFixed(5) ?? '';
-//     c.slController.text = 0.0.toStringAsFixed(
-//       5,
-//     ); //order.stopLoss?.toStringAsFixed(5) ?? '';
-//     c.tpController.text = 0.0.toStringAsFixed(5);
-
-//     return ResponsiveLayout(
-//       mobile: _buildScaffold(context, c, const EdgeInsets.all(12)),
-//       tablet: _buildScaffold(
-//         context,
-//         c,
-//         const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-//       ),
-//       desktop: _buildDesktopLayout(context, c),
-//     );
-//   }
-
-//   /// ---------------- MOBILE / TABLET ----------------
-//   Widget _buildScaffold(
-//     BuildContext context,
-//     PlaceOrderController c,
-//     EdgeInsets padding,
-//   ) {
-//     return Scaffold(
-//       backgroundColor: AppColors.background,
-//       appBar: _buildAppBar(context, c),
-//       body: Padding(
-//         padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-//         child: _buildOrderBody(context, c, padding),
-//       ),
-//     );
-//   }
-
-//   /// ---------------- DESKTOP ----------------
-//   Widget _buildDesktopLayout(BuildContext context, PlaceOrderController c) {
-//     return Scaffold(
-//       backgroundColor: AppColors.background,
-//       appBar: _buildAppBar(context, c),
-//       body: Padding(
-//         padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
-//         child: Row(
-//           children: [
-//             Expanded(
-//               flex: 2,
-//               child: _buildOrderBody(context, c, EdgeInsets.zero),
-//             ),
-//             const SizedBox(width: 24),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _buildOrderBody(
-//     BuildContext context,
-//     PlaceOrderController c,
-//     EdgeInsets padding,
-//   ) {
-//     return Padding(
-//       padding: padding,
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           Transform.translate(
-//             offset: const Offset(0, -4),
-//             child: Container(height: 1, color: Colors.grey[300]),
-//           ),
-//           const SizedBox(height: 16),
-
-//           // Current Market Prices
-//           Obx(() {
-//             final symbolKey = instrument.code.toUpperCase();
-//             final ticker = tradingController.getTickerSafe(symbolKey);
-
-//             if (ticker == null) {
-//               return const Text('—');
-//             }
-
-//             final sell = safeDouble(ticker['bid']);
-//             final buy = safeDouble(ticker['ask']);
-
-//             final isUp = tradingController.isPriceUpForSymbol(symbolKey);
-//             final color = isUp ? AppColors.up : AppColors.down;
-//             return Column(
-//               children: [
-//                 const Text(
-//                   'Current Market Price',
-//                   style: TextStyle(
-//                     color: AppColors.textPrimary,
-//                     fontSize: 14,
-//                     fontWeight: FontWeight.w500,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 8),
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                   children: [
-//                     Column(
-//                       children: [
-//                         const Text(
-//                           'Sell',
-//                           style: TextStyle(fontSize: 12, color: Colors.grey),
-//                         ),
-//                         _formattedPrice(sell, color),
-//                       ],
-//                     ),
-//                     Column(
-//                       children: [
-//                         const Text(
-//                           'Buy',
-//                           style: TextStyle(fontSize: 12, color: Colors.grey),
-//                         ),
-//                         _formattedPrice(buy, color),
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             );
-//           }),
-
-//           const SizedBox(height: 24),
-
-//           // Order Price Adjuster
-//           _priceAdjuster(
-//             c,
-//             "Order Price",
-//             AppColors.info,
-//             c.adjustPrice,
-//             c.priceController,
-//           ),
-
-//           const SizedBox(height: 16),
-
-//           // SL/TP Row
-//           _buildSLTPRow(c),
-
-//           const Spacer(),
-
-//           // Bottom Buttons
-//           _buildBottomButtons(c),
-//         ],
-//       ),
-//     );
-//   }
-
-//   PreferredSizeWidget _buildAppBar(
-//     BuildContext context,
-//     PlaceOrderController c,
-//   ) {
-//     return AppBar(
-//       backgroundColor: AppColors.background,
-//       elevation: 0.5,
-//       titleSpacing: 0,
-//       title: Padding(
-//         padding: const EdgeInsets.only(left: 8.0),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             const Text(
-//               'Modify Order',
-//               style: TextStyle(
-//                 color: AppColors.textPrimary,
-//                 fontWeight: FontWeight.bold,
-//                 fontSize: 18,
-//               ),
-//             ),
-//             const SizedBox(height: 4),
-//             RichText(
-//               text: TextSpan(
-//                 children: [
-//                   TextSpan(
-//                     text: _getSideLabel(order.side),
-//                     style: TextStyle(
-//                       color: order.side == 1 ? AppColors.up : AppColors.down,
-//                       fontWeight: FontWeight.bold,
-//                       fontSize: 14,
-//                     ),
-//                   ),
-//                   TextSpan(
-//                     text: ' ${order.orderQty.toStringAsFixed(2)}',
-//                     style: TextStyle(
-//                       color: order.side == 1 ? AppColors.up : AppColors.down,
-//                       fontWeight: FontWeight.bold,
-//                       fontSize: 14,
-//                     ),
-//                   ),
-//                   TextSpan(
-//                     text: ' ${instrument.code}',
-//                     style: const TextStyle(
-//                       color: AppColors.textPrimary,
-//                       fontWeight: FontWeight.bold,
-//                       fontSize: 14,
-//                     ),
-//                   ),
-//                   TextSpan(
-//                     text: ' @ ${order.orderPrice.toStringAsFixed(5)}',
-//                     style: const TextStyle(
-//                       color: AppColors.textPrimary,
-//                       fontWeight: FontWeight.bold,
-//                       fontSize: 14,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   String _getSideLabel(dynamic side) {
-//     if (side is int) {
-//       switch (side) {
-//         case 1:
-//           return 'Buy';
-//         case 2:
-//           return 'Sell';
-//       }
-//     } else if (side is String) {
-//       if (side.toLowerCase() == 'buy') return 'Buy';
-//       if (side.toLowerCase() == 'sell') return 'Sell';
-//     }
-//     return 'Unknown';
-//   }
-
-//   Widget _buildSLTPRow(PlaceOrderController c) {
-//     return Row(
-//       children: [
-//         Expanded(
-//           child: _priceAdjuster(
-//             c,
-//             "Stop Loss",
-//             AppColors.down,
-//             c.adjustSl,
-//             c.slController,
-//           ),
-//         ),
-//         const SizedBox(width: 12),
-//         Expanded(
-//           child: _priceAdjuster(
-//             c,
-//             "Take Profit",
-//             AppColors.success,
-//             c.adjustTp,
-//             c.tpController,
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-
-//   Widget _priceAdjuster(
-//     PlaceOrderController c,
-//     String label,
-//     Color color,
-//     void Function(double) onChange,
-//     TextEditingController controller,
-//   ) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Text(
-//           label,
-//           style: const TextStyle(
-//             fontSize: 14,
-//             color: AppColors.textPrimary,
-//             fontWeight: FontWeight.w500,
-//           ),
-//         ),
-//         const SizedBox(height: 8),
-//         Container(
-//           decoration: BoxDecoration(
-//             border: Border.all(color: Colors.grey[300]!),
-//             borderRadius: BorderRadius.circular(8),
-//           ),
-//           child: Row(
-//             children: [
-//               IconButton(
-//                 icon: const Icon(Icons.remove, color: AppColors.info),
-//                 onPressed: () => onChange(-0.0001),
-//                 padding: const EdgeInsets.all(8),
-//                 constraints: const BoxConstraints(),
-//               ),
-//               Expanded(
-//                 child: TextField(
-//                   controller: controller,
-//                   textAlign: TextAlign.center,
-//                   keyboardType: const TextInputType.numberWithOptions(
-//                     decimal: true,
-//                   ),
-//                   style: const TextStyle(
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                   decoration: const InputDecoration(
-//                     border: InputBorder.none,
-//                     isDense: true,
-//                     contentPadding: EdgeInsets.symmetric(vertical: 12),
-//                   ),
-//                 ),
-//               ),
-//               IconButton(
-//                 icon: const Icon(Icons.add, color: AppColors.info),
-//                 onPressed: () => onChange(0.0001),
-//                 padding: const EdgeInsets.all(8),
-//                 constraints: const BoxConstraints(),
-//               ),
-//             ],
-//           ),
-//         ),
-//         Container(
-//           height: 2,
-//           color: color,
-//           margin: const EdgeInsets.only(top: 4),
-//         ),
-//       ],
-//     );
-//   }
-
-//   Widget _buildBottomButtons(PlaceOrderController c) {
-//     return Container(
-//       width: double.infinity,
-//       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-//       decoration: BoxDecoration(
-//         color: Colors.grey[100],
-//         border: Border(top: BorderSide(color: Colors.grey[300]!)),
-//       ),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.center,
-//         children: [
-//           Text(
-//             'Modifying order price, stop loss, or take profit',
-//             style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-//           ),
-//           const SizedBox(height: 12),
-//           Row(
-//             children: [
-//               Expanded(
-//                 child: ElevatedButton(
-//                   style: ElevatedButton.styleFrom(
-//                     backgroundColor: Colors.grey[300],
-//                     foregroundColor: AppColors.textPrimary,
-//                     padding: const EdgeInsets.symmetric(vertical: 14),
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(8),
-//                     ),
-//                   ),
-//                   onPressed: () => Get.back(),
-//                   child: const Text(
-//                     'CANCEL',
-//                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-//                   ),
-//                 ),
-//               ),
-//               const SizedBox(width: 12),
-//               Expanded(
-//                 child: ElevatedButton(
-//                   style: ElevatedButton.styleFrom(
-//                     backgroundColor: AppColors.info,
-//                     foregroundColor: Colors.white,
-//                     padding: const EdgeInsets.symmetric(vertical: 14),
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(8),
-//                     ),
-//                   ),
-//                   onPressed: () {
-//                     final newOrderPrice = double.tryParse(
-//                       c.priceController.text,
-//                     );
-//                     final newSL = double.tryParse(c.slController.text);
-//                     final newTP = double.tryParse(c.tpController.text);
-
-//                     if (newOrderPrice == null || newOrderPrice <= 0) {
-//                       Get.snackbar(
-//                         "Error",
-//                         "Please enter a valid order price",
-//                         snackPosition: SnackPosition.BOTTOM,
-//                         backgroundColor: AppColors.down,
-//                         colorText: Colors.white,
-//                       );
-//                       return;
-//                     }
-
-//                     orderController.modifyOrder(
-//                       accountId: order.accountId,
-//                       pendingOrderId: order.pendingOrderId,
-//                       newOrderPrice: newOrderPrice,
-//                       newStopLoss: newSL,
-//                       newTakeProfit: newTP,
-//                     );
-
-//                     Get.back();
-//                   },
-//                   child: const Text(
-//                     'MODIFY ORDER',
-//                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _formattedPrice(double price, Color color) {
-//     final parts = price.toStringAsFixed(5).split('.');
-//     return RichText(
-//       text: TextSpan(
-//         style: TextStyle(color: color, fontWeight: FontWeight.bold),
-//         children: [
-//           TextSpan(text: '${parts[0]}.'),
-//           TextSpan(
-//             text: parts[1].substring(0, 2),
-//             style: const TextStyle(fontSize: 18),
-//           ),
-//           TextSpan(
-//             text: parts[1].substring(2),
-//             style: const TextStyle(fontSize: 24),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// test- time in force
-
-
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
@@ -541,7 +54,11 @@ class ModifyOrderPage extends StatelessWidget {
     c.currentSellPrice.value = currentSellPrice;
 
     // Initialize with order values
-    c.priceController.text = order.orderPrice.toStringAsFixed(5);
+    // c.priceController.text = order.orderPrice.toStringAsFixed(5);
+    if (c.priceController.text.isEmpty) {
+  c.priceController.text = order.orderPrice.toStringAsFixed(5);
+}
+
     // c.slController.text = order.stopLoss?.toStringAsFixed(5) ?? '';
     // c.tpController.text = order.takeProfit?.toStringAsFixed(5) ?? '';
     c.slController.text = 0.0.toStringAsFixed(
@@ -601,95 +118,144 @@ class ModifyOrderPage extends StatelessWidget {
     PlaceOrderController c,
     EdgeInsets padding,
   ) {
-    return Padding(
-      padding: padding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Transform.translate(
-            offset: const Offset(0, -4),
-            child: Container(height: 1, color: Colors.grey[300]),
-          ),
-          const SizedBox(height: 16),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: padding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
 
-          // Current Market Prices
-          Obx(() {
-            final symbolKey = instrument.code.toUpperCase();
-            final ticker = tradingController.getTickerSafe(symbolKey);
-
-            if (ticker == null) {
-              return const Text('—');
-            }
-
-            final sell = safeDouble(ticker['bid']);
-            final buy = safeDouble(ticker['ask']);
-
-            final isUp = tradingController.isPriceUpForSymbol(symbolKey);
-            final color = isUp ? AppColors.up : AppColors.down;
-            return Column(
+          children: [
+           Row(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                child: Text(
+                              'Price',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            )
+              ),
+              Expanded(child: _buildPriceInput(c))
+            ],
+           ),
+           SizedBox(height: 16,),
+            Row(
               children: [
-                const Text(
-                  'Current Market Price',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  child: Text(
+                    'Stop Loss',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 17,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      children: [
-                        const Text(
-                          'Sell',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                        _formattedPrice(sell, color),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        const Text(
-                          'Buy',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                        _formattedPrice(buy, color),
-                      ],
-                    ),
-                  ],
+
+                Expanded(
+                  child: _priceAdjuster(
+                    c,
+                    "SL",
+                    AppColors.down,
+                    c.adjustSl,
+                    c.slController,
+                  ),
                 ),
               ],
-            );
-          }),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  child: Text(
+                    'Take Profit',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: _priceAdjuster(
+                    c,
+                    "TP",
+                    AppColors.success,
+                    c.adjustTp,
+                    c.tpController,
+                  ),
+                ),
+              ],
+            ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-          // Order Price Adjuster
-          _priceAdjuster(
-            c,
-            "Order Price",
-            AppColors.info,
-            c.adjustPrice,
-            c.priceController,
-          ),
+            Row(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  child: Text(
+                    'Expiration',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
 
-          const SizedBox(height: 16),
+              Expanded(
+                  child: _buildFillPolicyDropdown(c, context),
+                ),
+              ],
+            ),
 
-          // SL/TP Row
-          _buildSLTPRow(c),
-          SizedBox(height: 10),
-          _buildExpiryDropDown(c, context),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+              decoration: BoxDecoration(
+                color: AppColors.lightNeutral,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Obx(() {
+                final symbol = c.symbol.value;
+                final ticker = c.tradingController.getTicker(symbol);
+                final bidRaw = ticker?['bid'];
+                final askRaw = ticker?['ask'];
+                final dotPositionRaw = ticker?['dot_position'];
+                final sell = double.tryParse(bidRaw?.toString() ?? '0') ?? 0;
+                final buy = double.tryParse(askRaw?.toString() ?? '0') ?? 0;
+                final dotPosition =
+                    int.tryParse(dotPositionRaw?.toString() ?? '5') ?? 5;
+                final color =
+                    c.tradingController.isPriceUp
+                        ? AppColors.up
+                        : AppColors.down;
 
-          const Spacer(),
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _formattedPrice(sell, color),
+                    _formattedPrice(buy, color),
+                  ],
+                );
+              }),
+            ),
+            const SizedBox(height: 16),
 
-          // Bottom Buttons
-          _buildBottomButtons(c),
-        ],
+            SizedBox(height: 12,),
+            _buildBottomButtons(c),
+           
+          ],
+        ),
       ),
     );
   }
+
 
   PreferredSizeWidget _buildAppBar(
     BuildContext context,
@@ -772,99 +338,154 @@ class ModifyOrderPage extends StatelessWidget {
     return 'Unknown';
   }
 
-  Widget _buildSLTPRow(PlaceOrderController c) {
-    return Row(
+
+Widget _priceAdjuster(
+  PlaceOrderController c,
+  String label,
+  Color color,
+  void Function(double) onChange,
+  TextEditingController controller,
+) {
+  return Column(
+    children: [
+      Row(
+        children: [
+          SizedBox(
+            width: 28,
+            child: GestureDetector(
+              onTap: () => onChange(-0.1),
+              child: const Text(
+                '⎼',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: AppColors.info,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              textAlign: TextAlign.center,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 6),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 28,
+            child: GestureDetector(
+              onTap: () => onChange(0.1),
+              child: const Text(
+                '+',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: AppColors.info,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      Container(
+        height: 2,
+        color: color,
+        margin: const EdgeInsets.only(top: 4),
+      ),
+    ],
+  );
+}
+
+
+ Widget _buildPriceInput(PlaceOrderController c) {
+    return Column(
       children: [
-        Expanded(
-          child: _priceAdjuster(
-            c,
-            "Stop Loss",
-            AppColors.down,
-            c.adjustSl,
-            c.slController,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _priceAdjuster(
-            c,
-            "Take Profit",
-            AppColors.success,
-            c.adjustTp,
-            c.tpController,
-          ),
+        Row(
+          children: [
+            GestureDetector(
+              onTap: () {
+                c.adjustPrice(-0.1);
+              },
+              child: const Text(
+                '⎼',
+                style: TextStyle(fontSize: 24, color: AppColors.info),
+              ),
+            ),
+            Expanded(
+              child: TextField(
+                controller: c.priceController,
+                textAlign: TextAlign.center,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  hintText: 'Not Set',
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                ),
+                onChanged: (_) => c.syncTextWithPrice(),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                c.adjustPrice(0.1);
+              },
+              child: const Text(
+                '+',
+                style: TextStyle(fontSize: 24, color: AppColors.up),
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _priceAdjuster(
-    PlaceOrderController c,
-    String label,
-    Color color,
-    void Function(double) onChange,
-    TextEditingController controller,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[300]!),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.remove, color: AppColors.info),
-                onPressed: () => onChange(-0.0001),
-                padding: const EdgeInsets.all(8),
-                constraints: const BoxConstraints(),
-              ),
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  textAlign: TextAlign.center,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12),
-                  ),
+
+  
+Widget _buildFillPolicyDropdown(
+  PlaceOrderController c,
+  BuildContext context,
+) {
+  const policies = ['Fill or Kill', 'Immediate or Cancel'];
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Obx(
+        () => DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            isExpanded: true,
+            value: c.selectedFillPolicy.value,
+            onChanged: (v) => c.selectedFillPolicy.value = v!,
+            items: policies.map((val) {
+              return DropdownMenuItem<String>(
+                value: val,
+                child: Text(
+                  val,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add, color: AppColors.info),
-                onPressed: () => onChange(0.0001),
-                padding: const EdgeInsets.all(8),
-                constraints: const BoxConstraints(),
-              ),
-            ],
+              );
+            }).toList(),
           ),
         ),
-        Container(
-          height: 2,
-          color: color,
-          margin: const EdgeInsets.only(top: 4),
-        ),
-      ],
-    );
-  }
+      ),
+      Container(
+        height: 1.5,
+        color: Colors.grey[300],
+        margin: const EdgeInsets.only(top: 6),
+      ),
+    ],
+  );
+}
+
 
   Widget _buildExpiryDropDown(PlaceOrderController c, BuildContext context) {
     // const expirations = ['GTC', 'Today', 'Specified', 'Specified day'];
@@ -881,53 +502,7 @@ class ModifyOrderPage extends StatelessWidget {
             ),
             SizedBox(width: 16), // optional spacing
             Flexible(
-              // ✅ Wrap dropdown in Flexible to prevent unbounded width error
-              // child: Obx(
-              //   () => DropdownButtonHideUnderline(
-              //     child: DropdownButton<String>(
-              //       value: c.selectedExpiration.value,
-              //       // value: modifyorderController.selectedExpiration.value,
-              //       isExpanded: true,
-              //       alignment: Alignment.centerRight,
-              //       dropdownColor: AppColors.background,
-
-              //       onChanged: (v) async {
-              //         if (v == null) return;
-
-              //         switch (v) {
-              //           case 'GTC':
-              //           case 'Today':
-              //             c.selectedExpiration.value = v;
-              //             break;
-              //           case 'Specified':
-                        
-              //             c.selectedExpiration.value = v;
-              //             // modifyorderController.selectedExpiration.value = v;
-              //             showDateTimePicker(context);
-              //             break;
-              //           case 'Specified day':
-                          
-              //             c.selectedExpiration.value = v;
-             
-              //             showDatePicker(context);
-              //             break;
-              //         }
-              //       },
-              //       items: const [
-              //         DropdownMenuItem(value: 'GTC', child: Text('GTC')),
-              //         DropdownMenuItem(value: 'Today', child: Text('Today')),
-              //         DropdownMenuItem(
-              //           value: 'Specified',
-              //           child: Text('Specified'),
-              //         ),
-              //         DropdownMenuItem(
-              //           value: 'Specified day',
-              //           child: Text('Specified day'),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
+           
 
             child:  Obx(
   () => DropdownButtonHideUnderline(
@@ -992,108 +567,60 @@ class ModifyOrderPage extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        border: Border(top: BorderSide(color: Colors.grey[300]!)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+     
+      child: Row(
         children: [
-          Text(
-            'Modifying order price, stop loss, or take profit',
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[300],
-                    foregroundColor: AppColors.textPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () => Get.back(),
-                  child: const Text(
-                    'CANCEL',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+          
+          Expanded(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.info,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.info,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    final newOrderPrice = double.tryParse(
-                      c.priceController.text,
-                    );
-                    final newSL = double.tryParse(c.slController.text);
-                    final newTP = double.tryParse(c.tpController.text);
-
-                    if (newOrderPrice == null || newOrderPrice <= 0) {
-                      Get.snackbar(
-                        "Error",
-                        "Please enter a valid order price",
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: AppColors.down,
-                        colorText: Colors.white,
-                      );
-                      return;
-                    }
-
-                    // orderController.modifyOrder(
-                    //   accountId: order.accountId,
-                    //   pendingOrderId: order.pendingOrderId,
-                    //   newOrderPrice: newOrderPrice,
-                    //   newStopLoss: newSL,
-                    //   newTakeProfit: newTP,
-                    //   // timeInForceId: order.timeInForceId
-                    // );
-                    // modifyorderController.modifyOrder(
-                    //   accountId: order.accountId,
-                    //   pendingOrderId: order.pendingOrderId,
-                    //   orderPrice: newOrderPrice,
-                    //   stopPrice: newSL!,
-                    //   limitPrice: newTP!,
-                    //   timeInForceId: order.timeInForceId
-                    //   // timeInForceId: 4
-                    //   );
-
-                    final tif = mapExpirationToTIF(c.selectedExpiration.value);
-
-                    modifyorderController.modifyOrder(
-                      accountId: order.accountId,
-                      pendingOrderId: order.pendingOrderId,
-                      orderPrice: newOrderPrice,
-                      stopPrice: newSL ?? 0,
-                      limitPrice: newTP ?? 0,
-                      timeInForceId: tif, 
-                      status: order.orderStatus,
-                      expiryDateTime:c.expirationDate.value
-                      
-                    );
-
-
-                    Get.back();
-                  },
-                  child: const Text(
-                    'MODIFY ORDER',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
+              onPressed: () {
+                final newOrderPrice = double.tryParse(
+                  c.priceController.text,
+                );
+                final newSL = double.tryParse(c.slController.text);
+                final newTP = double.tryParse(c.tpController.text);
+      
+                if (newOrderPrice == null || newOrderPrice <= 0) {
+                  Get.snackbar(
+                    "Error",
+                    "Please enter a valid order price",
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: AppColors.down,
+                    colorText: Colors.white,
+                  );
+                  return;
+                }
+    
+                final tif = mapExpirationToTIF(c.selectedExpiration.value);
+      
+                modifyorderController.modifyOrder(
+                  accountId: order.accountId,
+                  pendingOrderId: order.pendingOrderId,
+                  orderPrice: newOrderPrice,
+                  stopPrice: newSL ?? 0,
+                  limitPrice: newTP ?? 0,
+                  timeInForceId: tif, 
+                  status: order.orderStatus,
+                  expiryDateTime:c.expirationDate.value
+                  
+                );
+      
+      
+                Get.back();
+              },
+              child: const Text(
+                'MODIFY ORDER',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -1170,6 +697,3 @@ class ModifyOrderPage extends StatelessWidget {
     }
   }
 }
-
-
-

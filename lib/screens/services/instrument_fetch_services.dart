@@ -40,7 +40,7 @@ class InstrumentService {
 
       final jsonBody = jsonDecode(response.body);
       final data = jsonBody["data"] as List;
-      // print("Instument Data${response.body}");
+      print("Instument Data${response.body}");
       return data.map((e) => InstrumentModel.fromJson(e)).toList();
     } catch (e) {
       print("Instrument fetch error: $e");

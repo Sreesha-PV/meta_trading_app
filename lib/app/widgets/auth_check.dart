@@ -11,6 +11,7 @@ import 'package:netdania/app/getX/trade_getX.dart';
 import 'package:netdania/app/getX/position_getx.dart';
 import 'package:netdania/app/getX/wallet_getX.dart';
 import 'package:netdania/app/getX/order_getX.dart';
+import 'package:netdania/app/getX/symbol_filter_controller.dart';
 
 class AuthCheck extends StatefulWidget {
   const AuthCheck({super.key});
@@ -47,25 +48,16 @@ class _AuthCheckState extends State<AuthCheck> {
         debugPrint('⚠️ Error fetching user details: $e');
       }
 
-      Get.put(AccountController(), permanent: true);
-      final accountController = Get.find<AccountController>();
-
+      final accountController = Get.put(AccountController(), permanent: true);
       await accountController.ready;
 
-      // debugPrint(
-      //   "✅ Account loaded: ${accountController.selectedAccountId.value}",
-      // );
       Get.put(PositionsController(), permanent: true);
-    debugPrint('✅ PositionsController initialized');
-    
-    Get.put(OrderController(), permanent: true);
-    debugPrint('✅ OrderController initialized');
-    
-    Get.put(WalletController(), permanent: true);
-    debugPrint('✅ WalletController initialized');
 
-    Get.put(TradePageController(), permanent: true);
-    debugPrint('✅ TradePageController initialized');
+      Get.put(OrderController(), permanent: true);
+
+      Get.put(WalletController(), permanent: true);
+
+      Get.put(TradePageController(), permanent: true);
 
       final tradingController = Get.put(
         tradingControllerLib.TradingChartController(),
@@ -94,23 +86,32 @@ class _AuthCheckState extends State<AuthCheck> {
         debugPrint('📋 Available symbols: $symbols');
       }
 
+      final symbolFilterController = Get.put(
+        SymbolFilterController(),
+        permanent: true,
+      );
+
+      int symbolAttempts = 0;
+      while (symbolFilterController.isLoading.value && symbolAttempts < 30) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        symbolAttempts++;
+      }
+      debugPrint(
+        '✅ SymbolFilterController initialized with ${symbolFilterController.selectedCount} symbols',
+      );
+      tradingController.onLoginSuccess();
+      debugPrint('🔔 TradingChartController notified of login success');
       final token = await _authService.getToken();
       if (token == null || token.isEmpty) {
         debugPrint('⚠️ Token is null or empty');
         throw Exception('Token not found after initialization');
       }
-
-      tradingController.onLoginSuccess();
-      debugPrint('🔔 TradingChartController notified of login success');
-
       if (Get.isRegistered<WebSocketService>()) {
         Get.delete<WebSocketService>(force: true);
         debugPrint('🗑️ Deleted existing WebSocket instance');
       }
 
       final webSocket = Get.put(WebSocketService(), permanent: true);
-      debugPrint('✅ WebSocketService initialized');
-
       debugPrint('🔌 Connecting WebSocket with token');
       webSocket.connect(token);
       debugPrint('✅ WebSocket connection initiated');

@@ -6,6 +6,7 @@ import 'package:netdania/app/modules/home/view/home_page.dart' as HomePage;
 import 'package:netdania/app/modules/order/view/place_order.dart';
 import 'package:netdania/app/modules/trade/widgets/market/view/market_screen_view.dart';
 import 'package:netdania/utils/tradingview_webchart.dart';
+import 'package:netdania/screens/services/socket_connection.dart';
 
 class BottomFeaturePage extends StatelessWidget {
   final String symbol;
@@ -16,6 +17,14 @@ class BottomFeaturePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final TradingChartController tradingController =
         Get.find<TradingChartController>();
+    
+    LocalWebSocketService? webSocketService;
+    try {
+      webSocketService = Get.find<LocalWebSocketService>();
+    } catch (e) {
+      print('⚠️ LocalWebSocketService not found: $e');
+      webSocketService = null;
+    }
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -85,8 +94,14 @@ class BottomFeaturePage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               onTap: () {
+                print("Symbol on click $symbol");
                 Get.back();
-                Get.to(() => TradingViewWeb(symbol: symbol));
+                Get.to(
+                  () => TradingViewWeb(
+                    symbol: symbol,
+                    webSocketService: webSocketService,
+                  ),
+                );
               },
             ),
           ),
@@ -112,28 +127,6 @@ class BottomFeaturePage extends StatelessWidget {
               },
             ),
           ),
-
-          // Container(
-          //   margin: const EdgeInsets.only(bottom: 8),
-          //   decoration: BoxDecoration(
-          //     color: Colors.grey.withOpacity(0.3),
-          //     borderRadius: BorderRadius.circular(30),
-          //   ),
-          //   child: ListTile(
-          //     title: const Text(
-          //       'Market Statistics',
-          //       style: TextStyle(
-          //         color: AppColors.textPrimary,
-          //         fontWeight: FontWeight.w500,
-          //       ),
-          //       textAlign: TextAlign.center,
-          //     ),
-          //     onTap: () {
-          //       Get.back();
-          //       Get.to(() => MarketstatisticsPage());
-          //     },
-          //   ),
-          // ),
 
           Container(
             margin: const EdgeInsets.only(bottom: 8),
@@ -167,32 +160,6 @@ class BottomFeaturePage extends StatelessWidget {
               },
             ),
           ),
-
-          // Container(
-          //   margin: const EdgeInsets.only(bottom: 8),
-          //   decoration: BoxDecoration(
-          //     color: Colors.grey.withOpacity(0.3),
-          //     borderRadius: BorderRadius.circular(30),
-          //   ),
-          //   child: ListTile(
-          //     title: Obx(() {
-          //       return Text(
-          //         HomePage.isSimpleViewMode.value
-          //             ? 'Advanced View Mode'
-          //             : 'Simple View Mode',
-          //         style: const TextStyle(
-          //           color: AppColors.textPrimary,
-          //           fontWeight: FontWeight.w500,
-          //         ),
-          //         textAlign: TextAlign.center,
-          //       );
-          //     }),
-          //     onTap: () {
-          //       HomePage.isSimpleViewMode.toggle();
-          //       Get.back();
-          //     },
-          //   ),
-          // ),
 
           // Cancel Button
           Container(
