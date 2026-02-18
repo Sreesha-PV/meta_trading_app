@@ -6,8 +6,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:netdania/screens/chart/chart_controller.dart';
 import 'package:netdania/screens/chart/chart_html_generator.dart';
 
-
-/// WebView widget that displays the TradingView chart
 class ChartWebView extends StatefulWidget {
   final ChartController controller;
   final Function(bool isLoading)? onLoadingStateChanged;
@@ -30,7 +28,7 @@ class _ChartWebViewState extends State<ChartWebView> {
   void initState() {
     super.initState();
     _setupWebViewController();
-    
+
     // Listen to data changes
     widget.controller.dataStream.listen((_) {
       if (mounted) {
@@ -40,16 +38,17 @@ class _ChartWebViewState extends State<ChartWebView> {
   }
 
   void _setupWebViewController() {
-    _webViewController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.white)
-      ..enableZoom(false)
-      ..addJavaScriptChannel(
-        'FlutterChannel',
-        onMessageReceived: _handleJavaScriptMessage,
-      )
-      ..setOnConsoleMessage(_handleConsoleMessage)
-      ..loadHtmlString(_generateHtml());
+    _webViewController =
+        WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setBackgroundColor(Colors.white)
+          ..enableZoom(false)
+          ..addJavaScriptChannel(
+            'FlutterChannel',
+            onMessageReceived: _handleJavaScriptMessage,
+          )
+          ..setOnConsoleMessage(_handleConsoleMessage)
+          ..loadHtmlString(_generateHtml());
   }
 
   void _handleJavaScriptMessage(JavaScriptMessage message) {
@@ -91,10 +90,14 @@ class _ChartWebViewState extends State<ChartWebView> {
     });
     widget.onLoadingStateChanged?.call(true);
 
-    print('📥 Loading more historical data before timestamp: $earliestTimestamp');
+    print(
+      '📥 Loading more historical data before timestamp: $earliestTimestamp',
+    );
 
     try {
-      final newCandles = await widget.controller.loadMoreHistoricalData(earliestTimestamp);
+      final newCandles = await widget.controller.loadMoreHistoricalData(
+        earliestTimestamp,
+      );
 
       if (newCandles.isNotEmpty && mounted) {
         final jsCode = '''
@@ -136,15 +139,13 @@ class _ChartWebViewState extends State<ChartWebView> {
     required double? tp,
   }) {
     print('✅ SL/TP confirmed for position $positionId → SL: $sl, TP: $tp');
-    
-    // TODO: Call your trading API here to update SL/TP
-    // e.g. tradingController.updateSlTp(positionId: positionId, sl: sl, tp: tp);
 
     if (mounted) {
       final dotPosition = widget.controller.currentDotPosition;
+      // print('🔢 dotPosition: $dotPosition');
       final slText = sl != null ? sl.toStringAsFixed(dotPosition) : 'None';
       final tpText = tp != null ? tp.toStringAsFixed(dotPosition) : 'None';
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('SL: $slText | TP: $tpText'),
@@ -185,17 +186,15 @@ class _ChartWebViewState extends State<ChartWebView> {
   }
 
   void pushLivePrice(double bid, double ask) {
+    final mid = (bid + ask) / 2;
     final jsCode = '''
-      if (typeof updateLivePrice === 'function') {
-        updateLivePrice($bid, $ask);
-      }
-    ''';
-
+    if (typeof updateLivePrice === 'function') {
+      updateLivePrice($mid);
+    }
+  ''';
     try {
       _webViewController.runJavaScript(jsCode);
-    } catch (e) {
-      // Silently fail for live price updates
-    }
+    } catch (e) {}
   }
 
   void changeIndicator(String indicator) {
@@ -214,25 +213,20 @@ class _ChartWebViewState extends State<ChartWebView> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to candle updates
     return StreamBuilder<Map<String, dynamic>?>(
       stream: widget.controller.latestPriceStream,
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data != null) {
           final candle = widget.controller.getCurrentCandle();
           if (candle != null) {
-            // Push candle update to chart
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              pushCandle(candle);
-              pushLivePrice(
-                snapshot.data!['bid'] as double,
-                snapshot.data!['ask'] as double,
-              );
-            });
+            pushCandle(candle);
+            pushLivePrice(
+              snapshot.data!['bid'] as double,
+              snapshot.data!['ask'] as double,
+            );
           }
         }
 
-        // Listen to indicator changes
         return StreamBuilder<String>(
           stream: widget.controller.indicatorStream,
           builder: (context, indicatorSnapshot) {
@@ -241,7 +235,6 @@ class _ChartWebViewState extends State<ChartWebView> {
                 changeIndicator(indicatorSnapshot.data!);
               });
             }
-
             return WebViewWidget(controller: _webViewController);
           },
         );

@@ -4,22 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:netdania/app/models/instrument_model.dart';
 import 'package:netdania/screens/services/ohlc_service.dart';
 
-enum ChartState {
-  loading,
-  ready,
-  error,
-  noData,
-}
+enum ChartState { loading, ready, error, noData }
 
 /// Controller for managing chart state and operations
 class ChartController {
   final String initialSymbol;
   final String initialTimeframe;
 
-  ChartController({
-    required String symbol,
-    required this.initialTimeframe,
-  }) : initialSymbol = symbol.isEmpty ? 'EURUSD' : symbol {
+  ChartController({required String symbol, required this.initialTimeframe})
+    : initialSymbol = symbol.isEmpty ? 'EURUSD' : symbol {
     _init();
   }
 
@@ -27,14 +20,18 @@ class ChartController {
   final _stateController = StreamController<ChartState>.broadcast();
   final _timeframeController = StreamController<String>.broadcast();
   final _indicatorController = StreamController<String>.broadcast();
-  final _dataController = StreamController<List<Map<String, dynamic>>>.broadcast();
-  final _latestPriceController = StreamController<Map<String, dynamic>?>.broadcast();
+  final _dataController =
+      StreamController<List<Map<String, dynamic>>>.broadcast();
+  final _latestPriceController =
+      StreamController<Map<String, dynamic>?>.broadcast();
 
   Stream<ChartState> get stateStream => _stateController.stream;
   Stream<String> get timeframeStream => _timeframeController.stream;
   Stream<String> get indicatorStream => _indicatorController.stream;
   Stream<List<Map<String, dynamic>>> get dataStream => _dataController.stream;
-  Stream<Map<String, dynamic>?> get latestPriceStream => _latestPriceController.stream;
+  Stream<Map<String, dynamic>?> get latestPriceStream =>
+      _latestPriceController.stream;
+  StreamSubscription? _cacheUpdateSubscription;
 
   // Internal state
   List<Map<String, dynamic>> _ohlcData = [];
@@ -55,45 +52,67 @@ class ChartController {
   InstrumentModel? get selectedInstrument => _selectedInstrument;
   bool get isChartInitialized => _chartInitialized;
   int get currentDotPosition => _selectedInstrument?.decimalPlaces ?? 5;
+  bool _instrumentSet = false;
+  bool _dataReady = false;
 
   void _init() {
     _currentSymbol = initialSymbol;
     _selectedTimeframe = initialTimeframe;
+    _listenToCacheUpdates();
     _initializeChart();
   }
 
   Future<void> _initializeChart() async {
     _stateController.add(ChartState.loading);
-
     try {
       final data = await OHLCService.fetchOHLC(
         symbol: _currentSymbol,
         resolution: _selectedTimeframe,
       );
-
-      print('✅ Fetched ${data.length} candles for timeframe $_selectedTimeframe');
-
       _ohlcData = data;
-      _dataController.add(_ohlcData);
+      _dataReady = true;
 
       if (data.isEmpty) {
         _stateController.add(ChartState.noData);
         return;
       }
 
-      _stateController.add(ChartState.ready);
+      // ✅ Only emit ready if instrument already set
+      if (_instrumentSet) {
+        _stateController.add(ChartState.ready);
+      }
     } catch (e) {
-      print('❌ Error loading chart for $_currentSymbol: $e');
       _stateController.add(ChartState.error);
     }
   }
 
-  void setChartInitialized(bool initialized) {
-    _chartInitialized = initialized;
-  }
-
   void setSelectedInstrument(InstrumentModel instrument) {
     _selectedInstrument = instrument;
+    _instrumentSet = true;
+
+    if (_dataReady && _ohlcData.isNotEmpty) {
+      _stateController.add(ChartState.ready);
+    }
+  }
+
+  void _listenToCacheUpdates() {
+    _cacheUpdateSubscription = OHLCService.onCacheUpdated.listen((event) {
+      final symbol = event['symbol'] as String;
+      final resolution = event['resolution'] as String;
+      final data = event['data'] as List<Map<String, dynamic>>;
+
+      if (symbol == _currentSymbol && resolution == _selectedTimeframe) {
+        print(
+          '🔔 ChartController received background update: ${data.length} candles',
+        );
+        _ohlcData = data;
+        _dataController.add(_ohlcData);
+      }
+    });
+  }
+
+  void setChartInitialized(bool initialized) {
+    _chartInitialized = initialized;
   }
 
   Future<void> changeSymbol(String newSymbol) async {
@@ -106,13 +125,11 @@ class ChartController {
 
   Future<void> changeTimeframe(String newTimeframe) async {
     if (_selectedTimeframe == newTimeframe) return;
-
-    print('🔄 Changing timeframe from $_selectedTimeframe to $newTimeframe');
-
     _selectedTimeframe = newTimeframe;
     _timeframeController.add(newTimeframe);
     _chartInitialized = false;
     _currentCandle = null;
+    _ohlcData.clear();
     _stateController.add(ChartState.loading);
 
     try {
@@ -142,14 +159,18 @@ class ChartController {
     _indicatorController.add(newIndicator);
   }
 
-  Future<List<Map<String, dynamic>>> loadMoreHistoricalData(int earliestTimestamp) async {
+  Future<List<Map<String, dynamic>>> loadMoreHistoricalData(
+    int earliestTimestamp,
+  ) async {
     try {
       final timeframeSeconds = getTimeframeSeconds(_selectedTimeframe);
       final candlesToLoad = 300;
       final to = earliestTimestamp;
       final from = to - (timeframeSeconds * candlesToLoad);
 
-      print('🔄 Fetching OHLC: symbol=$_currentSymbol, from=$from, to=$to, resolution=$_selectedTimeframe');
+      print(
+        '🔄 Fetching OHLC: symbol=$_currentSymbol, from=$from, to=$to, resolution=$_selectedTimeframe',
+      );
 
       final newData = await OHLCService.fetchOHLC(
         symbol: _currentSymbol,
@@ -162,7 +183,8 @@ class ChartController {
 
       if (newData.isNotEmpty) {
         final existingTimes = _ohlcData.map((c) => c['time'] as int).toSet();
-        final newCandles = newData.where((c) => !existingTimes.contains(c['time'])).toList();
+        final newCandles =
+            newData.where((c) => !existingTimes.contains(c['time'])).toList();
 
         if (newCandles.isNotEmpty) {
           print('📊 Adding ${newCandles.length} new candles to chart');
@@ -190,16 +212,18 @@ class ChartController {
     _updateThrottleTimer = Timer(const Duration(milliseconds: 100), () {
       _canUpdate = true;
     });
-
-    final price = ask;
+    debugPrint('📥 New tick -> bid: $bid, ask: $ask');
+    final price = (ask + bid) / 2;
     final timeframeSeconds = getTimeframeSeconds(_selectedTimeframe);
-    final candleTime = (timestamp.millisecondsSinceEpoch ~/ 1000) ~/
+    final candleTime =
+        (timestamp.millisecondsSinceEpoch ~/ 1000) ~/
         timeframeSeconds *
         timeframeSeconds;
 
     if (_ohlcData.isNotEmpty) {
-      final lastHistoricalCandle = _ohlcData.last;
-      final lastHistoricalTime = lastHistoricalCandle['time'] as int;
+      final lastHistoricalTime = _ohlcData.last['time'] as int;
+
+      // ✅ Ignore ticks older than the last historical candle
       if (candleTime < lastHistoricalTime) {
         print('⚠️ Ignoring old tick: $candleTime < $lastHistoricalTime');
         return;
@@ -207,6 +231,17 @@ class ChartController {
     }
 
     if (_currentCandle == null || _currentCandle!['time'] != candleTime) {
+      // ✅ New candle started — push previous live candle into history
+      if (_currentCandle != null) {
+        final prevTime = _currentCandle!['time'] as int;
+        final idx = _ohlcData.indexWhere((c) => c['time'] == prevTime);
+        if (idx != -1) {
+          _ohlcData[idx] = Map<String, dynamic>.from(_currentCandle!);
+        } else {
+          _ohlcData.add(Map<String, dynamic>.from(_currentCandle!));
+        }
+      }
+
       _currentCandle = {
         'time': candleTime,
         'open': price,
@@ -215,6 +250,7 @@ class ChartController {
         'close': price,
       };
     } else {
+      // ✅ Update existing live candle
       _currentCandle!['high'] = math.max(
         _currentCandle!['high'] as double,
         price,
@@ -224,6 +260,14 @@ class ChartController {
         price,
       );
       _currentCandle!['close'] = price;
+    }
+
+    final liveTime = _currentCandle!['time'] as int;
+    final existingIdx = _ohlcData.indexWhere((c) => c['time'] == liveTime);
+    if (existingIdx != -1) {
+      _ohlcData[existingIdx] = Map<String, dynamic>.from(_currentCandle!);
+    } else {
+      _ohlcData.add(Map<String, dynamic>.from(_currentCandle!));
     }
 
     _latestPriceController.add({
@@ -272,6 +316,7 @@ class ChartController {
   }
 
   void dispose() {
+    _cacheUpdateSubscription?.cancel();
     _updateThrottleTimer?.cancel();
     _stateController.close();
     _timeframeController.close();

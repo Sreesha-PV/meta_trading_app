@@ -54,6 +54,7 @@ class LocalWebSocketService {
       if (parsed is List) {
         for (var item in parsed) {
           if (item is Map<String, dynamic>) {
+            // print('📡 Raw WS data: $item');
             onData(item);
           }
         }

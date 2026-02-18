@@ -1,76 +1,3 @@
-// class Position {
-//   final int accountId;
-//   // final int status;
-//   final int instrumentId;
-//   final int side; // 1 = Sell, 2 = Buy
-//   final int positionId;
-//   final double positionQty;
-//   final double positionInitialQty;
-//   final double orderPrice;
-//   final int? refPendingOrderId;
-   
-//   Position( {
-//     required this.accountId,
-//     // required this.status,
-//     required this.instrumentId,
-//     required this.side,
-//     required this.positionId,
-//     required this.positionQty,
-//     required this.positionInitialQty,
-//     required this.orderPrice,
-//     required this.refPendingOrderId,
-//   });
-
-//   Position copyWith({
-//   double? positionQty,
-// }) {
-//   return Position(
-//     accountId: accountId,
-//     // status: status,
-//     instrumentId: instrumentId,
-//     side: side,
-//     positionId: positionId,
-//     positionQty: positionQty ?? this.positionQty,
-//     positionInitialQty: positionInitialQty,
-//     orderPrice: orderPrice,
-//     refPendingOrderId: refPendingOrderId,
-//   );
-// }
-
-
-//   factory Position.fromJson(Map<String, dynamic> json) {
-//     return Position(
-//       accountId: json['account_id'] ?? 0,
-//       // status: json['order_status'],
-//       instrumentId: json['instrument_id'] ?? 0,
-//       side: json['side'] ?? 0,
-//       positionId: json['position_id'] ?? 0,
-//       positionQty: (json['position_qty'] ?? 0).toDouble(),
-//       positionInitialQty: (json['position_initial_qty'] ?? 0).toDouble(),
-//       orderPrice: (json['order_price'] ?? 0).toDouble(),
-//       refPendingOrderId: json['ref_pending_order_id'], 
-//     );
-//   }
-
-//   Map<String, dynamic> toJson() => {
-//         'account_id': accountId,
-//         // 'order_status':status,
-//         'instrument_id': instrumentId,
-//         'side': side,
-//         'position_id': positionId,
-//         'position_qty': positionQty,
-//         'position_initial_qty': positionInitialQty,
-//         'order_price': orderPrice,
-//       };
-
-//   @override
-//   String toString() {
-//     return 'Position(accountId: $accountId, instrumentId: $instrumentId, side: $side, positionId: $positionId, positionQty: $positionQty,positionInitialQty: $positionInitialQty, orderPrice: $orderPrice)';
-//   }
-// }
-
-
-
 class Position {
   final int accountId;
   final int instrumentId;
@@ -79,11 +6,16 @@ class Position {
   final double positionQty;
   final double positionInitialQty;
   final double orderPrice;
+   double? stopPrice;
+  double? limitPrice;
   final int? refPendingOrderId;
-   
-  Position( {
-    required this.accountId,
+  final DateTime?positionDate;
 
+   
+  Position({
+    required this.accountId,
+    required this.stopPrice, 
+    required this.limitPrice,
     required this.instrumentId,
     required this.side,
     required this.positionId,
@@ -91,10 +23,13 @@ class Position {
     required this.positionInitialQty,
     required this.orderPrice,
     required this.refPendingOrderId,
+    required this.positionDate
   });
 
   Position copyWith({
   double? positionQty,
+  // double? stopPrice,
+  // double?limitPrice 
 }) {
   return Position(
     accountId: accountId,
@@ -105,7 +40,10 @@ class Position {
     positionQty: positionQty ?? this.positionQty,
     positionInitialQty: positionInitialQty,
     orderPrice: orderPrice,
+    stopPrice: stopPrice,
+    limitPrice: limitPrice,
     refPendingOrderId: refPendingOrderId,
+    positionDate: positionDate
   );
 }
 
@@ -120,7 +58,13 @@ class Position {
       positionQty: (json['position_qty'] ?? 0).toDouble(),
       positionInitialQty: (json['position_initial_qty'] ?? 0).toDouble(),
       orderPrice: (json['order_price'] ?? 0).toDouble(),
+      stopPrice: (json['stop_price'] ?? 0).toDouble(),
+      limitPrice: (json['limit_price'] ?? 0).toDouble(),
       refPendingOrderId: json['ref_pending_order_id'], 
+      // positionDate: json['position_date']
+         positionDate: json['position_date'] != null
+        ? DateTime.tryParse(json['position_date'].toString())
+        : null,
     );
   }
 
@@ -133,11 +77,12 @@ class Position {
         'position_qty': positionQty,
         'position_initial_qty': positionInitialQty,
         'order_price': orderPrice,
+        'position_date': positionDate
       };
 
   @override
   String toString() {
-    return 'Position(accountId: $accountId, instrumentId: $instrumentId, side: $side, positionId: $positionId, positionQty: $positionQty,positionInitialQty: $positionInitialQty, orderPrice: $orderPrice)';
+    return 'Position(accountId: $accountId, instrumentId: $instrumentId, side: $side, positionId: $positionId, positionQty: $positionQty,positionInitialQty: $positionInitialQty, orderPrice: $orderPrice,positionDate:$positionDate)';
   }
 }
 

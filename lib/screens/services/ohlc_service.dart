@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
 import 'package:netdania/screens/services/authservices.dart';
@@ -6,14 +7,16 @@ import 'package:netdania/screens/services/authservices.dart';
 class OHLCService {
   static const String baseUrl = 'https://uat.ax1systems.com/ohcl/api/v1';
   static final AuthService _authService = AuthService();
-  
-  // Lazy initialization to ensure GetStorage is ready
+  static final StreamController<Map<String, dynamic>> _cacheUpdateController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  static Stream<Map<String, dynamic>> get onCacheUpdated =>
+      _cacheUpdateController.stream;
   static GetStorage? _storageInstance;
   static GetStorage get _storage {
     _storageInstance ??= GetStorage('ohlc_cache');
     return _storageInstance!;
   }
-  
+
   // Extended cache expiry - data stays fresh for 1 hour but remains accessible forever
   static const Duration _cacheFreshnessThreshold = Duration(hours: 1);
   static const int _maxCachedCandles = 1000;
@@ -33,15 +36,17 @@ class OHLCService {
     bool forceRefresh = false,
   }) async {
     final cacheKey = _getCacheKey(symbol, resolution);
-    
+
     if (!forceRefresh) {
       final cachedData = _getCachedData(cacheKey);
       if (cachedData != null && cachedData.isNotEmpty) {
         final cacheInfo = getCacheInfo(symbol, resolution);
         final ageMinutes = (cacheInfo['age_seconds'] as int) ~/ 60;
-        
-        print('📦 Using cached data for $symbol ($resolution): ${cachedData.length} candles (age: ${ageMinutes}m)');
-        
+
+        print(
+          '📦 Using cached data for $symbol ($resolution): ${cachedData.length} candles (age: ${ageMinutes}m)',
+        );
+
         // Only refresh in background if cache is getting stale (> 1 hour)
         if (cacheInfo['is_stale'] == true) {
           print('🔄 Cache is stale, refreshing in background');
@@ -53,7 +58,7 @@ class OHLCService {
             cacheKey: cacheKey,
           );
         }
-        
+
         return cachedData;
       }
     }
@@ -84,9 +89,10 @@ class OHLCService {
       if (token == null) {
         throw Exception('Session expired. Please login again.');
       }
-      
+
       final toTimestamp = to ?? DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final fromTimestamp = from ?? _calculateDefaultFrom(toTimestamp, resolution);
+      final fromTimestamp =
+          from ?? _calculateDefaultFrom(toTimestamp, resolution);
 
       final shouldIncludeResolution =
           !['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'].contains(resolution);
@@ -202,7 +208,7 @@ class OHLCService {
       }
 
       final Map<String, dynamic> cached = Map<String, dynamic>.from(cacheEntry);
-      
+
       // Check if data exists
       if (!cached.containsKey('data')) {
         print('⚠️ Cache corrupted for $cacheKey - missing data field');
@@ -210,20 +216,23 @@ class OHLCService {
       }
 
       final List<dynamic> rawData = cached['data'] as List<dynamic>;
-      final List<Map<String, dynamic>> data = rawData
-          .map((item) => Map<String, dynamic>.from(item))
-          .toList();
+      final List<Map<String, dynamic>> data =
+          rawData.map((item) => Map<String, dynamic>.from(item)).toList();
 
       // Calculate age for logging
       if (cached.containsKey('timestamp')) {
         final cachedTime = DateTime.parse(cached['timestamp'] as String);
         final age = DateTime.now().difference(cachedTime);
         final ageMinutes = age.inMinutes;
-        
+
         if (age > _cacheFreshnessThreshold) {
-          print('📦 Cache exists but stale for $cacheKey (age: ${ageMinutes}m, ${data.length} candles)');
+          print(
+            '📦 Cache exists but stale for $cacheKey (age: ${ageMinutes}m, ${data.length} candles)',
+          );
         } else {
-          print('📦 Cache fresh for $cacheKey (age: ${ageMinutes}m, ${data.length} candles)');
+          print(
+            '📦 Cache fresh for $cacheKey (age: ${ageMinutes}m, ${data.length} candles)',
+          );
         }
       }
 
@@ -234,28 +243,59 @@ class OHLCService {
     }
   }
 
-  /// Cache data permanently until manually cleared
-  static void _cacheData(String cacheKey, List<Map<String, dynamic>> data) {
+  static void _cacheData(
+    String cacheKey,
+    List<Map<String, dynamic>> newData, {
+    bool notify = false,
+    String? symbol,
+    String? resolution,
+  }) {
     try {
-      final dataToCache = data.length > _maxCachedCandles
-          ? data.sublist(data.length - _maxCachedCandles)
-          : data;
+      // Merge with existing cache instead of replacing
+      final existing = _getCachedData(cacheKey) ?? [];
+
+      // Build a map from existing data keyed by time
+      final Map<int, Map<String, dynamic>> merged = {
+        for (var c in existing) c['time'] as int: c,
+      };
+
+      // Overlay new candles (updates existing + adds new ones)
+      for (var candle in newData) {
+        merged[candle['time'] as int] = candle;
+      }
+
+      // Sort by time
+      final List<Map<String, dynamic>> mergedList =
+          merged.values.toList()
+            ..sort((a, b) => (a['time'] as int).compareTo(b['time'] as int));
+
+      final dataToCache =
+          mergedList.length > _maxCachedCandles
+              ? mergedList.sublist(mergedList.length - _maxCachedCandles)
+              : mergedList;
 
       final cacheEntry = {
         'timestamp': DateTime.now().toIso8601String(),
         'cached_at_unix': DateTime.now().millisecondsSinceEpoch,
         'data': dataToCache,
-        'version': 1, // For future migration support
+        'version': 1,
       };
 
       _storage.write(cacheKey, cacheEntry);
-      print('💾 Cached ${dataToCache.length} candles for $cacheKey (persistent storage)');
+      print('💾 Cached ${dataToCache.length} candles for $cacheKey');
+
+      if (notify && symbol != null && resolution != null) {
+        _cacheUpdateController.add({
+          'symbol': symbol,
+          'resolution': resolution,
+          'data': dataToCache,
+        });
+      }
     } catch (e) {
       print('⚠️ Error caching data for $cacheKey: $e');
     }
   }
 
-  /// Background refresh only updates cache, doesn't affect current display
   static void _refreshCacheInBackground({
     required String symbol,
     required String resolution,
@@ -274,8 +314,31 @@ class OHLCService {
         );
 
         if (freshData.isNotEmpty) {
-          _cacheData(cacheKey, freshData);
-          print('✅ Background refresh completed for $symbol ($resolution)');
+          // Merge with existing instead of overwriting
+          final existing = _getCachedData(cacheKey) ?? [];
+          final Map<int, Map<String, dynamic>> merged = {
+            for (var c in existing) c['time'] as int: c,
+          };
+          for (var candle in freshData) {
+            merged[candle['time'] as int] = candle;
+          }
+          final mergedList =
+              merged.values.toList()..sort(
+                (a, b) => (a['time'] as int).compareTo(b['time'] as int),
+              );
+
+          _cacheData(cacheKey, mergedList);
+
+          // 🔔 Notify listeners with new data
+          _cacheUpdateController.add({
+            'symbol': symbol,
+            'resolution': resolution,
+            'data': mergedList,
+          });
+
+          print(
+            '✅ Background refresh completed + UI notified for $symbol ($resolution)',
+          );
         }
       } catch (e) {
         print('⚠️ Background refresh failed for $symbol ($resolution): $e');
@@ -307,12 +370,9 @@ class OHLCService {
   static Map<String, dynamic> getCacheInfo(String symbol, String resolution) {
     final cacheKey = _getCacheKey(symbol, resolution);
     final cacheEntry = _storage.read(cacheKey);
-    
+
     if (cacheEntry == null) {
-      return {
-        'cached': false,
-        'exists': false,
-      };
+      return {'cached': false, 'exists': false};
     }
 
     try {
@@ -336,11 +396,7 @@ class OHLCService {
       };
     } catch (e) {
       print('⚠️ Error getting cache info for $cacheKey: $e');
-      return {
-        'cached': false,
-        'exists': true,
-        'error': e.toString(),
-      };
+      return {'cached': false, 'exists': true, 'error': e.toString()};
     }
   }
 
@@ -356,7 +412,7 @@ class OHLCService {
           final symbol = parts.sublist(0, parts.length - 1).join('_');
           final resolution = parts.last;
           final info = getCacheInfo(symbol, resolution);
-          
+
           cachedSymbols.add({
             'symbol': symbol,
             'resolution': resolution,

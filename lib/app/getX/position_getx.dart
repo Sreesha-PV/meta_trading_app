@@ -20,6 +20,20 @@ class PositionsController extends GetxController {
     loadPositions();
   }
 
+  final RxMap<int, double> stopPrices = <int, double>{}.obs;
+  final RxMap<int, double> takeProfits = <int, double>{}.obs;
+
+  void updateSL(int positionId, double newSL) {
+    stopPrices[positionId] = newSL;
+  }
+
+  void updateTP(int positionId, double newTP) {
+    takeProfits[positionId] = newTP;
+  }
+
+  double getSL(int positionId) => stopPrices[positionId] ?? 0.0;
+  double getTP(int positionId) => takeProfits[positionId] ?? 0.0;
+
   Future<void> loadPositions() async {
     try {
       final accountController = Get.find<AccountController>();
@@ -124,7 +138,6 @@ class PositionsController extends GetxController {
         instrument.code.toUpperCase(),
       );
       final ticker = tickers[symbolKey];
-      print("Positions to calculate P&L ${ticker}");
 
       if (ticker != null) {
         final currentPrice = PriceHelper.getCurrentPrice(
@@ -143,7 +156,7 @@ class PositionsController extends GetxController {
         if (plCalcModeId == 5 || plCalcModeId == 6) {
           final quoteCurrencyId =
               instrumentDetails
-                  ?.quoteCurrencyInstrumentId;
+                  ?.quoteCurrencyInstrumentId; // ← Added null safety
 
           if (quoteCurrencyId != null) {
             if (!tradingController.hasInstrumentDetails(quoteCurrencyId)) {

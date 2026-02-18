@@ -163,76 +163,156 @@ class PendingOrderTile extends StatelessWidget {
     );
   }
 
-  void _showOrderActions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Wrap(
-            children: [
-              // ListTile(
-              //    title: RichText(
-              //               text: TextSpan(
-              //                 children: [
-              //                   TextSpan(
-              //                     text: instrument.code,
-              //                     style: const TextStyle(
-              //                       color: AppColors.textPrimary,
-              //                       fontWeight: FontWeight.bold,
-              //                     ),
-              //                   ),
-              //                   TextSpan(
-              //                     text: ' Expiration:',
-
-              //                   ),
-
-              //                 ],
-              //               ),
-              //             ),
-              //             subtitle: RichText(text: TextSpan(
-
-              //             )),
-              // ),
-              ListTile(
-                title: Text(
-                  'Order Actions',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.edit, color: AppColors.info),
-                title: const Text('Edit Order'),
-                onTap: () {
-                  Get.back();
-                  onEditOrder();
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.close, color: AppColors.down),
-                title: Text(
-                  'Cancel Order',
-                  style: TextStyle(color: AppColors.down),
-                ),
-                onTap: () {
-                  Get.back();
-                  onCloseOrder();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isBuy = fetchOrder.side == 1;
+
+    void _showOrderActions(BuildContext context) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+        ),
+        builder: (context) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Wrap(
+              children: [
+                Container(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        title: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: instrument.code,
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              TextSpan(
+                                text:
+                                    ' ${_getTypeLabel(fetchOrder.orderType, fetchOrder.side)} ',
+                                style: TextStyle(
+                                  color: isBuy ? AppColors.up : AppColors.down,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              TextSpan(
+                                text: _formatVolume(fetchOrder.orderQty),
+                                 style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                ),
+                              )
+                            
+                            ],
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            
+                            Row(
+                              children: [
+                                Text(
+                                  fetchOrder.orderPrice.toStringAsFixed(4),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.arrow_right_alt_rounded,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  currentPrice == 0.0
+                                      ? 'Loading...'
+                                      : currentPrice.toStringAsFixed(4),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                                children: [
+                                  Text(
+                                    'S/L: ${fetchOrder.stopPrice?.toStringAsFixed(5)}',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                   Text(
+                                    'T/P: ${fetchOrder.limitPrice?.toStringAsFixed(5)}',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ), 
+                                ],
+                              ),
+
+                           
+                          ],
+                        ),
+
+                        trailing: Column(
+                          children: [
+                            Text(
+                              'Placed',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 20,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ListTile(
+                  title: Text(
+                    'Order Actions',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(Icons.edit, color: AppColors.info),
+                  title: const Text('Edit Order'),
+                  onTap: () {
+                    Get.back();
+                    onEditOrder();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.close, color: AppColors.down),
+                  title: Text(
+                    'Cancel Order',
+                    style: TextStyle(color: AppColors.down),
+                  ),
+                  onTap: () {
+                    Get.back();
+                    onCloseOrder();
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
 
     // print('Ordertype for pendingorder: ${_getOrderTypeLabel(fetchOrder)} ');
 
@@ -266,22 +346,7 @@ class PendingOrderTile extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // TextSpan(
-                  //   text: instrument.code,
-                  //   style: const TextStyle(
-                  //     color: AppColors.textPrimary,
-                  //     fontWeight: FontWeight.w600,
-                  //     fontSize: 17,
-                  //   ),
-                  // ),
-                  // TextSpan(
-                  //   text:
-                  //       ' ${_getTypeLabel(fetchOrder.orderType, fetchOrder.side)} ',
-                  //   style: TextStyle(
-                  //     color: isBuy ? AppColors.up : AppColors.down,
-                  //     fontWeight: FontWeight.bold,
-                  //   ),
-                  // ),
+                 
                   WidgetSpan(
                     alignment: PlaceholderAlignment.middle,
                     child: Transform.scale(
@@ -302,14 +367,7 @@ class PendingOrderTile extends StatelessWidget {
             ),
             subtitle: Row(
               children: [
-                // Text(
-                //   fetchOrder.orderPrice.toStringAsFixed(4),
-                //   style: const TextStyle(
-                //     fontSize: 14,
-                //     color: AppColors.textSecondary,
-                //     fontWeight: FontWeight.bold,
-                //   ),
-                // ),
+              
                 Text(
                   '${_formatVolume(fetchOrder.orderQty)}/0.0 at',
                   style: const TextStyle(
@@ -319,22 +377,9 @@ class PendingOrderTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                // const Icon(
-                //   Icons.arrow_right_alt_rounded,
-                //   size: 14,
-                //   color: AppColors.textSecondary,
-                // ),
+               
                 const SizedBox(width: 4),
-                // Text(
-                //   currentPrice == 0.0
-                //       ? 'Loading...'
-                //       : currentPrice.toStringAsFixed(4),
-                //   style: const TextStyle(
-                //     fontSize: 14,
-                //     fontWeight: FontWeight.bold,
-                //     color: AppColors.textSecondary,
-                //   ),
-                // ),
+               
                 Text(
                   fetchOrder.orderPrice.toStringAsFixed(4),
                   style: const TextStyle(
@@ -350,9 +395,9 @@ class PendingOrderTile extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w400,
                 fontSize: 20,
-                color: const Color.fromARGB(255, 17, 8, 99),
+                color: AppColors.textSecondary,
               ),
-            ),
+            )
           ),
         ),
         Divider(height: 1, thickness: 1, color: Colors.grey[300]),
@@ -360,18 +405,11 @@ class PendingOrderTile extends StatelessWidget {
     );
   }
 
-  // OrderType mapDropdownToOrderType(String dropdownValue) {
-  //   switch (dropdownValue) {
-  //     case 'Market Execution':
-  //       return OrderType.Market;
-  //     case 'Buy Limit':
-  //     case 'Sell Limit':
-  //       return OrderType.Limit;
-  //     case 'Buy Stop':
-  //     case 'Sell Stop':
-  //       return OrderType.Stop;
-  //     default:
-  //       return OrderType.Unknown;
-  //   }
-  // }
+  String _formatDate(DateTime? dateTime) {
+    if (dateTime == null) return '--';
+
+    return "${dateTime.year.toString().padLeft(4, '0')}-"
+        "${dateTime.month.toString().padLeft(2, '0')}-"
+        "${dateTime.day.toString().padLeft(2, '0')}";
+  }
 }

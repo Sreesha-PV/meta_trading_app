@@ -37,7 +37,6 @@ class OrderTile extends StatelessWidget {
 
   final PositionsController positionController =
       Get.find<PositionsController>();
-
   OrderTile({
     super.key,
     required this.position,
@@ -63,8 +62,6 @@ class OrderTile extends StatelessWidget {
     final isBuy = position.side == 1;
     final entryPrice = position.orderPrice;
     final volume = position.positionQty;
-    double _previousProfit = 0.0;
-    bool _isFirstBuild = true;
 
     final tradingController = Get.find<TradingChartController>();
     final ticker = tradingController.tickers[instrument.code.toUpperCase()];
@@ -80,11 +77,6 @@ class OrderTile extends StatelessWidget {
       pointValue: pointValue,
       currencyRate: currencyRate,
     );
-
-    if (_isFirstBuild) {
-      _previousProfit = profit;
-      _isFirstBuild = false;
-    }
 
     // print("Profit $profit");
     final profitColor = getProfitColor(profit);
@@ -121,8 +113,9 @@ class OrderTile extends StatelessWidget {
               realPosition,
             );
 
-            final stopLoss = pendingOrder?.stopPrice;
-            final takeProfit = pendingOrder?.limitPrice;
+            // final stopLoss = pendingOrder?.stopPrice;
+
+            // final takeProfit = pendingOrder?.limitPrice;
 
             return Padding(
               padding: const EdgeInsets.all(16.0),
@@ -180,83 +173,84 @@ class OrderTile extends StatelessWidget {
                                     size: 14,
                                   ),
                                   const SizedBox(width: 4),
-                                  TweenAnimationBuilder<double>(
-                                    duration: const Duration(milliseconds: 400),
-                                    curve: Curves.easeOutCubic,
-                                    tween: Tween<double>(
-                                      begin: currentPrice,
-                                      end: currentPrice,
+
+                                
+                                  Text(
+                                    currentPrice == 0.0
+                                        ? 'Loading...'
+                                        : currentPrice.toStringAsFixed(4),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.textSecondary,
                                     ),
-                                    builder: (context, animatedValue, child) {
-                                      return Text(
-                                        animatedValue == 0.0
-                                            ? 'Loading...'
-                                            : animatedValue.toStringAsFixed(4),
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                      );
-                                    },
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 6),
+
+                            
+                              Obx(() {
+                                final positionsController =
+                                    Get.find<PositionsController>();
+                                final stopLoss = positionsController.getSL(
+                                  position.positionId,
+                                );
+                                final takeProfit = positionsController.getTP(
+                                  position.positionId,
+                                );
+
+                                return Row(
+                                  children: [
+                                    Text(
+                                      'S/L: ${stopLoss.toStringAsFixed(decimalPlaces)}',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                    SizedBox(width: 16),
+                                    Text(
+                                      'T/P: ${takeProfit.toStringAsFixed(decimalPlaces)}',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+
+                             
                               Row(
                                 children: [
                                   Text(
-                                    'S/L: ',
-                                    style: TextStyle(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                  Text(
-                                    stopLoss?.toStringAsFixed(5) ?? '--',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Text(
-                                    'T/P: ',
-                                    style: TextStyle(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                  Text(
-                                    takeProfit?.toStringAsFixed(5) ?? '--',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    'Open: ${_formatDate(position.positionDate)}',
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
                             ],
                           ),
-                          trailing: TweenAnimationBuilder<double>(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeOutCubic,
-                            tween: Tween<double>(
-                              begin: _previousProfit,
-                              end: profit,
-                            ),
-                            onEnd: () {
-                              _previousProfit = profit;
-                            },
-                            builder: (context, animatedValue, child) {
-                              return Text(
-                                '${animatedValue >= 0 ? '+' : ''}${animatedValue.toStringAsFixed(2)}',
+
+                          trailing: Column(
+                            children: [
+                             
+                              Text(
+                                profit.toStringAsFixed(2),
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                  color:
-                                      animatedValue >= 0
-                                          ? Colors.blue
-                                          : Colors.red,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 20,
+                                  color: profitColor,
+                                  letterSpacing: -0.3,
                                 ),
-                              );
-                            },
+                              ),
+                              Text(
+                                '#${position.positionId}',
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              // Text(_formatDate(position.positionDate))
+                            ],
                           ),
                         ),
                       ],
@@ -343,8 +337,8 @@ class OrderTile extends StatelessWidget {
                         // realPosition.status
                       );
 
-                      final pendingOrder = orderController
-                          .getRelatedPendingOrder(realPosition);
+                      // final pendingOrder = orderController
+                      //     .getRelatedPendingOrder(realPosition);
 
                       print("Found pending order: $pendingOrder");
 
@@ -359,6 +353,15 @@ class OrderTile extends StatelessWidget {
 
                       final stopLoss = result['stopLoss'];
                       final takeProfit = result['takeProfit'];
+
+                      positionsController.updateSL(
+                        position.positionId,
+                        stopLoss ?? 0,
+                      );
+                      positionsController.updateTP(
+                        position.positionId,
+                        takeProfit ?? 0,
+                      );
 
                       // print("Stop Loss value: $stopLoss");
                       // print("Take Profit value: $takeProfit");
@@ -561,51 +564,6 @@ class OrderTile extends StatelessWidget {
                   ),
                 ),
               ),
-
-              // // Expanded panel — keep it reactive for SL/TP updates
-              // if (isExpanded)
-              //   Obx(() {
-              //     final orderController = Get.find<OrderController>();
-              //     final positionsController = Get.find<PositionsController>();
-
-              //     final Position? updated = positionsController.findPosition(
-              //       instrumentId: position.instrumentId,
-              //       side: position.side,
-              //       accountId: position.accountId,
-              //     );
-
-              //     if (updated == null) {
-              //       return Padding(
-              //         padding: const EdgeInsets.all(16),
-              //         child: Text(
-              //           "Position not found",
-              //           style: TextStyle(color: Colors.red),
-              //         ),
-              //       );
-              //     }
-
-              //     final pending = orderController.getRelatedPendingOrder(
-              //       updated,
-              //     );
-
-              //     return Padding(
-              //       padding: const EdgeInsets.symmetric(
-              //         horizontal: 16,
-              //         vertical: 8,
-              //       ),
-              //       child: Column(
-              //         crossAxisAlignment: CrossAxisAlignment.start,
-              //         children: [
-              //           Text(
-              //             'S/L: ${pending?.stopPrice?.toStringAsFixed(5) ?? "--"}',
-              //           ),
-              //           Text(
-              //             'T/P: ${pending?.limitPrice?.toStringAsFixed(5) ?? "--"}',
-              //           ),
-              //         ],
-              //       ),
-              //     );
-              //   }),
             ],
           ),
         ),
@@ -665,5 +623,13 @@ class OrderTile extends StatelessWidget {
       return volume.toStringAsFixed(2);
     }
     return volume.toStringAsFixed(3);
+  }
+
+  String _formatDate(DateTime? dateTime) {
+    if (dateTime == null) return '--';
+
+    return "${dateTime.year.toString().padLeft(4, '0')}-"
+        "${dateTime.month.toString().padLeft(2, '0')}-"
+        "${dateTime.day.toString().padLeft(2, '0')}";
   }
 }

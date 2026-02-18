@@ -1,396 +1,13 @@
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:netdania/app/getX/trading_getX.dart';
-// import 'package:netdania/app/models/order_model.dart';
-// import 'package:netdania/screens/services/order_services.dart';
-
-// /// ---------------- CONTROLLER ---------------- ///
-// class PlaceOrderController extends GetxController {
-//   final symbol = ''.obs;
-//   final currentBuyPrice = 0.0.obs;
-//   final currentSellPrice = 0.0.obs;
-
-//   final selectedOrderType = 'Buy Limit'.obs;
-//   final selectedFillPolicy = 'Fill or Kill'.obs;
-//   final volume = 0.2.obs;
-//   final sl = 0.0.obs;
-//   final tp = 0.0.obs;
-
-//   final Map<String, String> slValues = {};
-//   final Map<String, String> tpValues = {};
-//   final isSlInitialized = false.obs;
-//   final isTpInitialized = false.obs;
-
-//   final slController = TextEditingController();
-//   final tpController = TextEditingController();
-
-//   late TradingChartController tradingController;
-
-//  final RxList<Map<String, dynamic>> liveData = <Map<String, dynamic>>[].obs;
-
-//   @override
-//   void onInit() {
-//     tradingController = Get.find<TradingChartController>();
-//     super.onInit();
-//   }
-
-//   void changeVolume(double delta) {
-//     volume.value = (volume.value + delta).clamp(0.01, double.infinity);
-//   }
-
-// //   void setSymbol(String newSymbol) {
-// //   symbol.value = newSymbol;
-
-// //   // Reset SL/TP
-// //   isSlInitialized.value = false;
-// //   isTpInitialized.value = false;
-
-// //   sl.value = 0.0;
-// //   tp.value = 0.0;
-
-// //   slController.text = '';
-// //   tpController.text = '';
-// // }
-
-// void setSymbol(String newSymbol) {
-//   // Only reset when symbol actually changes
-//   if (symbol.value != newSymbol) {
-//     symbol.value = newSymbol;
-
-//     // Reset SL/TP values
-//     isSlInitialized.value = false;
-//     isTpInitialized.value = false;
-//     sl.value = 0.0;
-//     tp.value = 0.0;
-//     slController.text = '';
-//     tpController.text = '';
-
-//     // Optionally, update current buy/sell price for the new symbol
-//     final ticker = tradingController.getTicker(newSymbol);
-//     currentBuyPrice.value = double.tryParse(ticker?['ask']?.toString() ?? '0') ?? 0.0;
-//     currentSellPrice.value = double.tryParse(ticker?['bid']?.toString() ?? '0') ?? 0.0;
-//   }
-// }
-
-//   void adjustSl(double delta) {
-//     final ticker = tradingController.getTicker(symbol.value);
-//     final sellPrice = double.tryParse(ticker?['bid']?.toString() ?? '0') ?? 0.0;
-
-//     if (!isSlInitialized.value) {
-//       sl.value = sellPrice;
-//       isSlInitialized.value = true;
-//     } else {
-//       sl.value = (sl.value + delta).clamp(0, double.infinity);
-//     }
-//     slController.text = sl.value.toStringAsFixed(2);
-//   }
-
-//   void adjustTp(double delta) {
-//     final ticker = tradingController.getTicker(symbol.value);
-//     final buyPrice = double.tryParse(ticker?['ask']?.toString() ?? '0') ?? 0.0;
-
-//     if (!isTpInitialized.value) {
-//       tp.value = buyPrice;
-//       isTpInitialized.value = true;
-//     } else {
-//       tp.value = (tp.value + delta).clamp(0, double.infinity);
-//     }
-//     tpController.text = tp.value.toStringAsFixed(2);
-//   }
-
-// //   Future<void> placeOrder(bool isBuy) async {
-// //     if (volume.value <= 0) {
-// //       Get.snackbar('Error', 'Volume must be greater than 0');
-// //       return;
-// //     }
-
-// //     final price = (tradingController.tickerData?['ask'] ??
-// //             (isBuy ? currentBuyPrice.value : currentSellPrice.value))
-// //         .toDouble();
-
-// //     // final order = OrderModel(
-// //     //   symbolCode: symbol.value,
-// //     //   orderType: mapOrderTypeCode(selectedOrderType.value),
-// //     //   volume: volume.value,
-// //     //   price: price,
-// //     //   stopLoss: sl.value > 0 ? sl.value : null,
-// //     //   takeProfit: tp.value > 0 ? tp.value : null,
-// //     //   fillPolicy: selectedFillPolicy.value,
-// //     //   accountId: 5,
-// //     //   side: isBuy ? 2 : 1,
-// //     // );
-
-// //     final ticker = tradingController.tickers[symbol.toUpperCase()];
-// //     final orderPrice = isBuy
-// //         ? double.tryParse(ticker?['ask']?.toString() ?? '0.0') ?? 0.0
-// //         : double.tryParse(ticker?['bid']?.toString() ?? '0.0') ?? 0.0;
-
-// // final order = OrderModel(
-// //   accountId: 5,
-// //   symbolCode: symbol.value,
-// //   price: orderPrice,
-// //   side: isBuy ? 2 : 1,
-// //   volume: volume.value,
-// //   stopLoss: sl.value > 0 ?sl.value :null,
-// //   takeProfit: tp.value > 0 ?tp.value :null,
-// //   orderType: mapOrderTypeCode(selectedOrderType.value),
-// //   fillPolicy: selectedFillPolicy.value
-// // );
-
-// //     final success = await OrderService.placeOrder(order);
-// //     if (success) {
-// //       Get.find<OrderController>().addOrder(order);
-// //       sl.value = 0.0;
-// //       tp.value = 0.0;
-// //       slController.text = '';
-// //       tpController.text = '';
-// //       isSlInitialized.value = false;
-// //       isTpInitialized.value = false;
-// //       Get.back();
-// //       Get.snackbar('Order Placed', 'Your order has been added to Trading page');
-// //     } else {
-// //       Get.snackbar('Error', 'Failed to place order');
-// //     }
-// //   }
-// //
-
-// // // new api
-// Future<void> placeOrder(bool isBuy) async {
-//   if (volume.value <= 0) {
-//     Get.snackbar('Error', 'Volume must be greater than 0');
-//     return;
-//   }
-
-//   // Fetch correct price
-//   final ticker = tradingController.tickers[symbol.toUpperCase()];
-//   final price = isBuy
-//       ? double.tryParse(ticker?['ask']?.toString() ?? '0.0') ?? 0.0
-//       : double.tryParse(ticker?['bid']?.toString() ?? '0.0') ?? 0.0;
-
-//   final order = OrderModel(
-//     // userId: 4,
-//     // userUuid: "string",
-//     accountId: 4,
-//     accountUuid: "string",
-//     instrumentId: 1001,
-//     side: isBuy ? 2 : 1,
-//     orderType: 2,
-//     orderQty: volume.value,
-//     timeInForceId: selectedFillPolicy.value == 'Fill or Kill' ? 1 : 2,
-//     orderPrice: price,
-//     stopPrice: sl.value > 0 ? sl.value : 0,
-//     limitPrice: tp.value > 0 ? tp.value : 0,
-//   );
-
-//   final success = await OrderService.placeOrder(order);
-//   if (success) {
-//     Get.snackbar('Order Placed', 'Order placed successfully.');
-//   } else {
-//     Get.snackbar('Error', 'Failed to place order.');
-//   }
-// }
-
-//   @override
-//   void onClose() {
-//     slController.dispose();
-//     tpController.dispose();
-//     super.onClose();
-//   }
-
-// }
-
-// // // Test
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:netdania/app/enum/ordertype_enum.dart';
-// import 'package:netdania/app/getX/order_getX.dart';
-// import 'package:netdania/app/getX/trading_getX.dart';
-// import 'package:netdania/app/models/order_model.dart';
-// import 'package:netdania/screens/services/order_services.dart';
-
-// /// ---------------- CONTROLLER ---------------- ///
-// class PlaceOrderController extends GetxController {
-//   final symbol = ''.obs;
-//   final currentBuyPrice = 0.0.obs;
-//   final currentSellPrice = 0.0.obs;
-
-//   // final selectedOrderType = 'Buy Limit'.obs;
-//   final selectedOrderType = 'Market Execution'.obs;
-//   final selectedFillPolicy = 'Fill or Kill'.obs;
-//   final volume = 0.2.obs;
-//   final sl = 0.0.obs;
-//   final tp = 0.0.obs;
-
-//   final Map<String, String> slValues = {};
-//   final Map<String, String> tpValues = {};
-//   final isSlInitialized = false.obs;
-//   final isTpInitialized = false.obs;
-
-//   final slController = TextEditingController();
-//   final tpController = TextEditingController();
-
-//   final priceController = TextEditingController();
-
-//   late TradingChartController tradingController;
-
-//  final RxList<Map<String, dynamic>> liveData = <Map<String, dynamic>>[].obs;
-
-//   @override
-//   void onInit() {
-//     tradingController = Get.find<TradingChartController>();
-//   //    ever(sl, (_) => slController.text = sl.value.toStringAsFixed(5));
-//   // ever(tp, (_) => tpController.text = tp.value.toStringAsFixed(5));
-//   // ever(price, (_) => priceController.text = price.value.toStringAsFixed(5));
-//     super.onInit();
-//   }
-
-//   void changeVolume(double delta) {
-//     volume.value = (volume.value + delta).clamp(0.01, double.infinity);
-//   }
-
-// var price = 0.0.obs;
-// // var priceStep = 0.0.obs;
-
-// void syncTextWithPrice() {
-//   priceController.text = price.value.toStringAsFixed(3);
-// }
-
-// void adjustPrice(double delta) {
-//   price.value = (price.value + delta).clamp(0, double.infinity);
-// }
-
-// void setSymbol(String newSymbol) {
-//   // Only reset when symbol actually changes
-//   if (symbol.value != newSymbol) {
-//     symbol.value = newSymbol;
-
-//     // Reset SL/TP values
-//     isSlInitialized.value = false;
-//     isTpInitialized.value = false;
-//     sl.value = 0.0;
-//     tp.value = 0.0;
-//     slController.text = '';
-//     tpController.text = '';
-
-//     // Optionally, update current buy/sell price for the new symbol
-//     final ticker = tradingController.getTicker(newSymbol);
-//     currentBuyPrice.value = double.tryParse(ticker?['ask']?.toString() ?? '0') ?? 0.0;
-//     currentSellPrice.value = double.tryParse(ticker?['bid']?.toString() ?? '0') ?? 0.0;
-//   }
-// }
-
-//   void adjustSl(double delta) {
-//     final ticker = tradingController.getTicker(symbol.value);
-//     final sellPrice = double.tryParse(ticker?['bid']?.toString() ?? '0') ?? 0.0;
-
-//     if (!isSlInitialized.value) {
-//       sl.value = sellPrice;
-//       isSlInitialized.value = true;
-//     } else {
-//       sl.value = (sl.value + delta).clamp(0, double.infinity);
-//     }
-//     slController.text = sl.value.toStringAsFixed(2);
-//   }
-
-//   void adjustTp(double delta) {
-//     final ticker = tradingController.getTicker(symbol.value);
-//     final buyPrice = double.tryParse(ticker?['ask']?.toString() ?? '0') ?? 0.0;
-
-//     if (!isTpInitialized.value) {
-//       tp.value = buyPrice;
-//       isTpInitialized.value = true;
-//     } else {
-//       tp.value = (tp.value + delta).clamp(0, double.infinity);
-//     }
-//     tpController.text = tp.value.toStringAsFixed(2);
-//   }
-
-// OrderType mapDropdownToOrderType(String dropdownValue) {
-//   switch (dropdownValue) {
-//     case 'Market Execution':
-//       return OrderType.Market;
-//     case 'Buy Limit':
-//     case 'Sell Limit':
-//       return OrderType.Limit;
-//     case 'Buy Stop':
-//     case 'Sell Stop':
-//       return OrderType.Stop;
-//     default:
-//       return OrderType.Unknown;
-//   }
-// }
-
-// // // new api
-// Future<void> placeOrder(bool isBuy) async {
-//   if (volume.value <= 0) {
-//     Get.snackbar('Error', 'Volume must be greater than 0');
-//     return;
-//   }
-
-//   // Fetch correct price
-//   final ticker = tradingController.tickers[symbol.toUpperCase()];
-//   final price = isBuy
-//       ? double.tryParse(ticker?['ask']?.toString() ?? '0.0') ?? 0.0
-//       : double.tryParse(ticker?['bid']?.toString() ?? '0.0') ?? 0.0;
-//   final orderType = mapDropdownToOrderType(selectedOrderType.value);
-//   final order = OrderRequestModel(
-//     // userId: 4,
-//     // userUuid: "string",
-//     accountId: 4,
-//     accountUuid: "string",
-//     instrumentId: 1001,
-//     side: isBuy ? 1 : 2,
-//     // orderType: 2,
-//     orderType: orderType.index,
-//        // orderType: selectedOrderType.value =='Market Execution' ? 1 : 2,
-
-//     orderQty: volume.value,
-//     timeInForceId: selectedFillPolicy.value == 'Fill or Kill' ? 1 : 2,
-//     orderPrice: price,
-//     stopPrice: sl.value > 0 ? sl.value : 0,
-//     limitPrice: tp.value > 0 ? tp.value : 0,
-//   );
-
-//   final success = await OrderService.placeOrder(order);
-//   if (success) {
-//     final orderController = Get.find<OrderController>();
-//     orderController.addOrder(order);
-
-//     // Reset UI fields
-//     sl.value = 0.0;
-//     tp.value = 0.0;
-//     slController.text = '';
-//     tpController.text = '';
-//     isSlInitialized.value = false;
-//     isTpInitialized.value = false;
-
-//     // Close modal if any
-//     Get.back();
-
-//     Get.snackbar('Order Placed', 'Order placed successfully.');
-//   } else {
-//     Get.snackbar('Error', 'Failed to place order.');
-//   }
-// }
-
-//   @override
-//   void onClose() {
-//     slController.dispose();
-//     tpController.dispose();
-//     super.onClose();
-//   }
-
-// }
-
-// sl/tp fix
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
 import 'package:netdania/app/enum/ordertype_enum.dart';
 import 'package:netdania/app/getX/account_getx.dart';
 import 'package:netdania/app/getX/order_getX.dart';
+import 'package:netdania/app/getX/position_getx.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
+import 'package:netdania/app/getX/wallet_getX.dart';
+import 'package:netdania/app/models/instrument_detail_model.dart';
 import 'package:netdania/app/models/instrument_model.dart';
 // import 'package:netdania/app/getX/user_getX.dart';
 import 'package:netdania/app/models/order_model.dart';
@@ -433,6 +50,8 @@ class PlaceOrderController extends GetxController {
   final slController = TextEditingController();
   final tpController = TextEditingController();
   // final priceController = TextEditingController();
+  
+  final instDetails = <InstrumentDetailsModel>[].obs;
 
   late TradingChartController tradingController;
   @override
@@ -495,6 +114,7 @@ class PlaceOrderController extends GetxController {
 
     super.onInit();
   }
+
 
   void setSymbol(String newSymbol) {
     if (symbol.value != newSymbol) {
@@ -638,13 +258,33 @@ class PlaceOrderController extends GetxController {
     }
   }
 
+
+
+
   Future<void> placeOrder(bool isBuy) async {
+
+    
     if (volume.value <= 0) {
-      Get.snackbar('Error', 'Volume must be greater than 0');
+      Get.snackbar('Error', 'Volume must be greater than 0',backgroundColor: AppColors.error);
       return;
     }
 
+    
+
+
+
     final accountController = Get.find<AccountController>();
+    final walletController = Get.find<WalletController>();
+    
+if (walletController.balance <= 0) {
+  Get.snackbar(
+    'X Error',
+    'Insufficient margin to trade',
+    backgroundColor: AppColors.error,
+    colorText: AppColors.background,
+  );
+  return;
+}
 
     if (accountController.selectedAccountId.value <= 0) {
       Get.snackbar('Error', 'No account selected');
@@ -670,7 +310,6 @@ class PlaceOrderController extends GetxController {
       Get.snackbar('Error', 'Instrument not found for ${symbol.value}');
       return;
     }
-
     final instrumentId = instrument.instrumentId;
 
     // final orderType = mapDropdownToOrderType(selectedOrderType.value);
@@ -701,10 +340,11 @@ class PlaceOrderController extends GetxController {
     } else {
       orderPrice = double.tryParse(priceController.text) ?? 0;
       if (orderPrice <= 0) {
-        Get.snackbar('Error', 'Please enter a valid price for your order');
+        Get.snackbar('X Error', 'Please enter a valid price for your order',backgroundColor: AppColors.error,colorText: AppColors.background);
         return;
       }
     }
+
 
     // ---------------- Create Order Model ----------------
     // final int timeInForceId =
@@ -723,7 +363,7 @@ class PlaceOrderController extends GetxController {
 
     if (tif == 3 || tif == 4) {
       if (exp == null) {
-        Get.snackbar('Validation error', 'Expiration date is required');
+        Get.snackbar('X Validation error', 'Expiration date is required',backgroundColor: AppColors.error,colorText: AppColors.background);
         return;
       }
 
@@ -744,6 +384,7 @@ class PlaceOrderController extends GetxController {
       }
     }
 
+
     print('TIF: $timeInForceId');
     print('expiryDateTime: $expiryDateTime');
 
@@ -751,24 +392,28 @@ class PlaceOrderController extends GetxController {
     final currentBid = double.tryParse(ticker?['bid']?.toString() ?? '0') ?? 0;
 
     if (isBuy) {
-      if (stopPrice > 0 && stopPrice >= currentBid) {
-        Get.snackbar('Error', 'SL must be below market price');
+      if (stopPrice > 0 && stopPrice >= currentBid ) {
+        Get.snackbar('X Error', 'SL must be below market price',backgroundColor: AppColors.error,colorText: AppColors.background);
         return;
       }
       if (limitPrice > 0 && limitPrice <= currentAsk) {
-        Get.snackbar('Error', 'TP must be above market price');
+        Get.snackbar('X Error', 'TP must be above market price',backgroundColor: AppColors.error,colorText: AppColors.background);
         return;
       }
     } else {
       if (stopPrice > 0 && stopPrice <= currentAsk) {
-        Get.snackbar('Error', 'SL must be above market price');
+        Get.snackbar('X Error', 'SL must be above market price',backgroundColor: AppColors.error,colorText: AppColors.background);
         return;
       }
       if (limitPrice > 0 && limitPrice >= currentBid) {
-        Get.snackbar('Error', 'TP must be below market price');
+        Get.snackbar('X Error', 'TP must be below market price',backgroundColor: AppColors.error,colorText: AppColors.background);
         return;
       }
     }
+
+
+    
+
 
     final order = OrderRequestModel(
       accountId: accountId,
@@ -789,12 +434,22 @@ class PlaceOrderController extends GetxController {
 
     // ---------------- Send Order ----------------
     final success = await OrderService.placeOrder(order);
-    //     final orderService = OrderService();
-    // final success = await orderService.placeOrder(order);
+
+// if (success) {
+//   final orderController = Get.find<OrderController>();
+//   final positionController = Get.find<PositionsController>();
+
+//   await orderController.fetchPendingOrders(accountId);
+//   await positionController.loadPositions();
 
     if (success) {
       final orderController = Get.find<OrderController>();
       orderController.addOrder(order);
+// await orderController.fetchPendingOrders(accountId);
+// await Get.find<PositionsController>().loadPositions();
+
+//     final orderController = Get.find<OrderController>();
+// await orderController.fetchPendingOrders(accountId);
 
       sl.value = 0.0;
       tp.value = 0.0;
@@ -806,19 +461,21 @@ class PlaceOrderController extends GetxController {
       Get.snackbar(
         'Success',
         'Order placed successfully',
-        backgroundColor: AppColors.success,
+        backgroundColor: AppColors.success,colorText: AppColors.background
       );
       // Get.until((route) => route.settings.name == '/main' || route.isFirst);
       Get.until((route) => route.isFirst);
       MainTabView.selectedIndexNotifier.value = 2;
     } else {
       Get.snackbar(
-        'Error',
+        'X Error',
         'Order placement failed',
-        backgroundColor: AppColors.error,
+        backgroundColor: AppColors.error,colorText: AppColors.background
       );
     }
   }
+
+
 
   void changeSymbol(InstrumentModel instrument) {
     symbol.value = instrument.code;
@@ -859,33 +516,13 @@ class PlaceOrderController extends GetxController {
   }
 }
 
-// class OrderTypeSide {
-//   final OrderType type;
-//   final int side;
-//   OrderTypeSide(this.type, this.side);
-// }
 
-// OrderTypeSide mapDropdownToTypeSide(String dropdownValue) {
-//   switch (dropdownValue) {
-//     case 'Buy Limit':
-//     case 'Buy Stop':
-//       return OrderTypeSide(OrderType.Limit, 1);
-//     case 'Sell Limit':
-//     case 'Sell Stop':
-//       return OrderTypeSide(OrderType.Limit, 2); // SELL
-//     case 'Market Execution':
-//       return OrderTypeSide(OrderType.Market, 0);
-//     default:
-//       return OrderTypeSide(OrderType.Unknown, 0);
-//   }
-// }
 
 class OrderTypeSide {
   final OrderType type;
   final int side; // 1 = Buy, 2 = Sell, 0 = Market/undefined
   OrderTypeSide(this.type, this.side);
 }
-
 OrderTypeSide mapIntToTypeSide(int code) {
   switch (code) {
     case 1:
@@ -902,3 +539,4 @@ OrderTypeSide mapIntToTypeSide(int code) {
       return OrderTypeSide(OrderType.Unknown, 0); // Unknown
   }
 }
+

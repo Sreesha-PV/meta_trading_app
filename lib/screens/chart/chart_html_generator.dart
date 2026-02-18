@@ -8,7 +8,6 @@ import 'package:netdania/screens/js/indicator_js_functions.dart';
 import 'package:netdania/screens/js/position_js_functions.dart';
 import 'package:netdania/screens/js/bottom_sheet_js_functions.dart';
 
-/// Generates HTML content for the TradingView chart
 class ChartHtmlGenerator {
   static String generateHtml({
     required List<Map<String, dynamic>> ohlcData,
@@ -229,7 +228,7 @@ class ChartHtmlGenerator {
     return '''
     // Data
     let chartData     = ${jsonEncode(validData)};
-    let positionLines = ${jsonEncode(positionLines)};
+    let positionLines = ${jsonEncode(positionLines)}; 
     let chart, candlestickSeries, indicatorSeries, livePriceSeries, askPriceSeries;
     let currentIndicator = 'none';
     let isChartReady  = false;

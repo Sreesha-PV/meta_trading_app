@@ -14,12 +14,11 @@ import 'package:netdania/app/config/theme/app_color.dart';
 
 class OrderController extends GetxController {
   var activeOrders = <OrderRequestModel>[].obs;
-  var orderHistory = <OrderRequestModel>[].obs;
+  // var orderHistory = <OrderRequestModel>[].obs;
+  var orderHistory = <PendingOrder>[].obs;
   // var closedOrders = <OrderRequestModel>[].obs;
   var closedOrders = <ClosedOrder>[].obs;
-  // var closedOrders = <ClosedOrder>[].obs;
-  // var fetchedOrders = <FetchedOrderModel>[].obs;
-  // var fetchedOrders = <OrderFetchModel>[].obs;
+
   var positionOrders = <Position>[].obs;
   // var pendingOrders = <PendingOrder>[].obs;
   final RxList<PendingOrder> pendingOrders = <PendingOrder>[].obs;
@@ -39,12 +38,11 @@ class OrderController extends GetxController {
   final RxnInt expandedOrderIndex = RxnInt();
 
   List<OrderRequestModel> get orders => activeOrders;
-  List<OrderRequestModel> get orderHistoryList => orderHistory;
+  // List<OrderRequestModel> get orderHistoryList => orderHistory;
+  List<PendingOrder> get orderHistoryList => orderHistory;
   // List<OrderRequestModel> get closedOrdersList => closedOrders;
   List<ClosedOrder> get closedOrderList => closedOrders;
-  // List<ClosedOrder> get closedOrdersList => closedOrders;
-  // List<FetchedOrderModel> get fetchedOrderList => fetchedOrders;
-  // List<OrderFetchModel> get OrderFetchList => fetchedOrders;
+
   RxList<Position> get orderFetchList => positionOrders;
   String _getOrderKeyFromSettlement(ClosedOrder settlement) {
     return '${settlement.accountId}_${settlement.settlementId}_${settlement.instrumentId}';
@@ -136,51 +134,6 @@ class OrderController extends GetxController {
     }
   }
 
-  // Future<void> fetchClosedOrders(int accountId) async {
-  //   try {
-  //     await loadRemovedOrders();
-
-  //     // Fetch closed orders from the service
-  //     final fetched = await OrderService.fetchClosedOrders(accountId);
-  //     print("Fetched Closed Orders: $fetched");
-
-  //     // Filter out removed orders and convert to OrderRequestModel
-  //     final convertedOrders =
-  //         fetched
-  //             .where(
-  //               (closedOrder) =>
-  //                   !removedOrderIds.contains(
-  //                     _getOrderKeyFromSettlement(closedOrder),
-  //                   ),
-  //             )
-  //             .map((closedOrder) {
-  //               final orderType = mapDropdownToOrderType(
-  //                 selectedOrderType.value,
-  //               );
-  //               final tif = mapFillPolicyToTIF(selectedFillPolicy.value);
-
-  //               return OrderRequestModel(
-  //                 accountId: closedOrder.accountId,
-  //                 instrumentId: closedOrder.instrumentId,
-  //                 side: 1,
-  //                 orderType: orderType.index,
-  //                 orderQty: closedOrder.settledQty,
-  //                 timeInForceId: tif,
-  //                 orderPrice: closedOrder.settledPl,
-  //                 stopPrice: 0.0,
-  //                 limitPrice: 0.0,
-  //                 expiryDateTime: null,
-  //               );
-
-  //             })
-  //             .toList();
-
-  //     closedOrders.assignAll(convertedOrders);
-  //   } catch (e) {
-  //     print("Failed to fetch closed orders: $e");
-  //   }
-  // }
-
   Future<void> fetchClosedOrders(int accountId) async {
     try {
       await loadRemovedOrders();
@@ -200,17 +153,6 @@ class OrderController extends GetxController {
       print("Failed to fetch closed orders: $e");
     }
   }
-
-  // Future<void> fetchPendingOrders(int accountId) async {
-  //   try {
-  //     final pending = await OrderService.fetchOrders(accountId);
-  //     // print("Pending orders loaded: ${pending.length}");
-  //     pendingOrders.assignAll(pending);
-  //     // debugPrint('Fetched Pending Orders: ${pendingOrders.map((o) => o.orderType)}');
-  //   } catch (e) {
-  //     print(" Failed to fetch pending orders: $e");
-  //   }
-  // }
 
   final _fetchedAccounts = <int>{};
 
@@ -250,22 +192,31 @@ class OrderController extends GetxController {
       // Close loading dialog
       Get.back();
 
-      // if (response.success) {
-      if (success) {
-        pendingOrders.removeWhere(
-          (order) => order.pendingOrderId == pendingOrderId,
-        );
 
-        // Show success message
-        Get.snackbar(
-          'Success',
-          'Order closed successfully',
-          backgroundColor: AppColors.success,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          duration: Duration(seconds: 2),
-        );
-      } else {
+          if (success) {
+            final closedOrder = pendingOrders.firstWhereOrNull(
+              (order) => order.pendingOrderId == pendingOrderId,
+            );
+
+            if (closedOrder != null) {
+              // Remove from pending
+              pendingOrders.removeWhere(
+                (order) => order.pendingOrderId == pendingOrderId,
+              );
+
+          
+              orderHistory.insert(0, closedOrder);
+            }
+
+            Get.snackbar(
+              'Success',
+              'Order Cancelled',
+              backgroundColor: AppColors.success,
+              colorText: Colors.white,
+              snackPosition: SnackPosition.BOTTOM,
+              duration: Duration(seconds: 2),
+            );
+          } else {
         // Show error message
         Get.snackbar(
           'Error',
@@ -296,49 +247,6 @@ class OrderController extends GetxController {
       print('Error closing order: $e');
     }
   }
-
-  // Future<bool> modifyOrder({
-  //   required int accountId,
-  //   required int pendingOrderId,
-  //   required double newOrderPrice,
-  //   // required int timeInForceId,
-  //   double? newStopLoss,
-  //   double? newTakeProfit,
-  // }) async {
-  //   try {
-  //     // Call your API service to modify the order
-  //     final success = await OrderService.modifyOrder(
-  //       accountId,
-  //       pendingOrderId,
-  //       newOrderPrice,
-  //       // timeInForceId,
-  //       newStopLoss,
-  //       newTakeProfit,
-
-  //     );
-
-  //     if (success) {
-  //       // Update the order in the local list if needed
-  //       final orderIndex = pendingOrders.indexWhere(
-  //         (o) => o.pendingOrderId == pendingOrderId,
-  //       );
-  //       if (orderIndex != -1) {
-  //         // Update the order properties
-  //         pendingOrders[orderIndex].orderPrice = newOrderPrice;
-  //         if (newStopLoss != null)
-  //           pendingOrders[orderIndex].stopPrice = newStopLoss;
-  //         if (newTakeProfit != null)
-  //           pendingOrders[orderIndex].limitPrice = newTakeProfit;
-  //         pendingOrders.refresh();
-  //       }
-  //       return true;
-  //     }
-  //     return false;
-  //   } catch (e) {
-  //     print('Error modifying order: $e');
-  //     return false;
-  //   }
-  // }
 
   void addOrUpdatePendingOrder(PendingOrder order) {
     final index = pendingOrders.indexWhere(
@@ -443,7 +351,7 @@ class OrderController extends GetxController {
 
   void addOrder(OrderRequestModel order) {
     activeOrders.add(order);
-    orderHistory.add(order);
+    // orderHistory.add(order);
     update();
   }
 
@@ -472,6 +380,9 @@ class OrderController extends GetxController {
         positionInitialQty: executedQty,
         orderPrice: po.orderPrice,
         refPendingOrderId: po.pendingOrderId,
+        stopPrice: po.stopPrice,
+        limitPrice: po.limitPrice,
+        positionDate: po.createdAt
       ),
     );
   }
@@ -548,6 +459,7 @@ class OrderController extends GetxController {
   // }
 
   PendingOrder? getRelatedPendingOrder(Position position) {
+    
     if (pendingOrders.isEmpty) return null;
 
     final linkedOrder = pendingOrders.firstWhereOrNull(
@@ -564,6 +476,8 @@ class OrderController extends GetxController {
 
     return fallbackOrder;
   }
+
+
 
   void removeLosingActiveOrders(Map<String, Map<String, dynamic>> tickers) {
     final List<OrderRequestModel> toClose = [];
@@ -609,21 +523,6 @@ class OrderController extends GetxController {
   void removeOrder(OrderRequestModel order) {
     activeOrders.remove(order);
   }
-
-  // OrderType mapDropdownToOrderType(String dropdownValue) {
-  //   switch (dropdownValue) {
-  //     case 'Market Execution':
-  //       return OrderType.Market;
-  //     case 'Buy Limit':
-  //     case 'Sell Limit':
-  //       return OrderType.Limit;
-  //     case 'Buy Stop':
-  //     case 'Sell Stop':
-  //       return OrderType.Stop;
-  //     default:
-  //       return OrderType.Unknown;
-  //   }
-  // }
 
   OrderType mapDropdownToOrderType(String? dropdownValue) {
     switch (dropdownValue) {

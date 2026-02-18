@@ -122,8 +122,8 @@ function addLivePriceLine() {
     color: '#EF5350',
     lineWidth: 1,
     lineStyle: LightweightCharts.LineStyle.Dotted,
-    priceLineVisible: true,
-    lastValueVisible: true,
+    priceLineVisible: false,
+    lastValueVisible: false,
   });
   
   askPriceSeries = chart.addLineSeries({
@@ -135,11 +135,15 @@ function addLivePriceLine() {
   });
 }
 
-function updateLivePrice(bid, ask) {
-  if (!livePriceSeries || !askPriceSeries || !chartData.length) return;
+function updateLivePrice(mid) {
+  if (!livePriceSeries || !chartData.length) return;
+
   const last = chartData[chartData.length - 1];
-  livePriceSeries.update({ time: last.time, value: bid });
-  askPriceSeries.update({ time: last.time, value: ask });
+
+  livePriceSeries.update({
+    time: last.time,
+    value: mid
+  });
 }
 
 // ── Real-time Candle Updates ──────────────────────────────────────
