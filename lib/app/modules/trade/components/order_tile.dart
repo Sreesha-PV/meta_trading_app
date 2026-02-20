@@ -14,6 +14,7 @@ import 'package:netdania/app/modules/trade/widgets/modify/modify_position.dart';
 // import 'package:netdania/screens/services/instrument_fetch_services.dart';
 import 'package:netdania/app/getX/modify_limit_getx.dart';
 import 'package:netdania/utils/profit_calculator.dart';
+import 'package:netdania/app/modules/trade/components/animated_profit_text.dart';
 
 class OrderTile extends StatelessWidget {
   // final OrderRequestModel order;
@@ -82,8 +83,6 @@ class OrderTile extends StatelessWidget {
     final profitColor = getProfitColor(profit);
 
     void showPositionActions(BuildContext context) {
-      // final orderController = Get.find<OrderController>();
-      // final positionsController = Get.find<PositionsController>();
       showModalBottomSheet(
         context: context,
         backgroundColor: Colors.white,
@@ -174,7 +173,6 @@ class OrderTile extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 4),
 
-                                
                                   Text(
                                     currentPrice == 0.0
                                         ? 'Loading...'
@@ -189,7 +187,6 @@ class OrderTile extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
 
-                            
                               Obx(() {
                                 final positionsController =
                                     Get.find<PositionsController>();
@@ -219,7 +216,6 @@ class OrderTile extends StatelessWidget {
                                 );
                               }),
 
-                             
                               Row(
                                 children: [
                                   Text(
@@ -233,7 +229,6 @@ class OrderTile extends StatelessWidget {
 
                           trailing: Column(
                             children: [
-                             
                               Text(
                                 profit.toStringAsFixed(2),
                                 style: TextStyle(
@@ -554,14 +549,18 @@ class OrderTile extends StatelessWidget {
                     ),
                   ],
                 ),
-                trailing: Text(
-                  profit.toStringAsFixed(2),
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
-                    color: profitColor,
-                    letterSpacing: -0.3,
-                  ),
+                // trailing: Text(
+                //   profit.toStringAsFixed(2),
+                //   style: TextStyle(
+                //     fontWeight: FontWeight.w600,
+                //     fontSize: 20,
+                //     color: profitColor,
+                //     letterSpacing: -0.3,
+                //   ),
+                // ),
+                trailing: AnimatedProfitText(
+                  profit: profit,
+                  profitColor: profitColor,
                 ),
               ),
             ],
@@ -633,3 +632,4 @@ class OrderTile extends StatelessWidget {
         "${dateTime.day.toString().padLeft(2, '0')}";
   }
 }
+

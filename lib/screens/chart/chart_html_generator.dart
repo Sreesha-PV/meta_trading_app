@@ -15,17 +15,18 @@ class ChartHtmlGenerator {
     required int dotPosition,
     InstrumentModel? selectedInstrument,
   }) {
-    final validData = ohlcData.where((candle) {
-      return candle['time'] is int &&
-          candle['open'] is double &&
-          candle['high'] is double &&
-          candle['low'] is double &&
-          candle['close'] is double &&
-          !candle['open'].isNaN &&
-          !candle['high'].isNaN &&
-          !candle['low'].isNaN &&
-          !candle['close'].isNaN;
-    }).toList();
+    final validData =
+        ohlcData.where((candle) {
+          return candle['time'] is int &&
+              candle['open'] is double &&
+              candle['high'] is double &&
+              candle['low'] is double &&
+              candle['close'] is double &&
+              !candle['open'].isNaN &&
+              !candle['high'].isNaN &&
+              !candle['low'].isNaN &&
+              !candle['close'].isNaN;
+        }).toList();
 
     final positionLines = _getPositionLines(selectedInstrument);
 
@@ -59,25 +60,33 @@ class ChartHtmlGenerator {
 ''';
   }
 
-  static List<Map<String, dynamic>> _getPositionLines(InstrumentModel? selectedInstrument) {
+  static List<Map<String, dynamic>> _getPositionLines(
+    InstrumentModel? selectedInstrument,
+  ) {
     List<Map<String, dynamic>> positionLines = [];
     try {
       final positionController = Get.find<PositionsController>();
-      positionLines = positionController.positionOrders
-          .where((p) =>
-              selectedInstrument != null &&
-              p.instrumentId == selectedInstrument.instrumentId)
-          .map((p) => {
-                'price': p.orderPrice,
-                'color': p.side == 1 ? '#26a69a' : '#ef5350',
-                'label': '${p.side == 1 ? "▲ BUY" : "▼ SELL"} #${p.positionId}',
-                'positionId': p.positionId,
-                'side': p.side,
-                'qty': p.positionQty,
-                'sl': null,
-                'tp': null,
-              })
-          .toList();
+      positionLines =
+          positionController.positionOrders
+              .where(
+                (p) =>
+                    selectedInstrument != null &&
+                    p.instrumentId == selectedInstrument.instrumentId,
+              )
+              .map(
+                (p) => {
+                  'price': p.orderPrice,
+                  'color': p.side == 1 ? '#26a69a' : '#ef5350',
+                  'label':
+                      '${p.side == 1 ? "▲ BUY" : "▼ SELL"} #${p.positionId}',
+                  'positionId': p.positionId,
+                  'side': p.side,
+                  'qty': p.positionQty,
+                  'sl': null,
+                  'tp': null,
+                },
+              )
+              .toList();
     } catch (_) {}
     return positionLines;
   }
@@ -243,7 +252,71 @@ class ChartHtmlGenerator {
     let selectedPositionId = null;
     const lastTapTime      = {};
     const DOUBLE_TAP_MS    = 350;
+    let _positionUpdateTimer = null;
+    function updatePositionLines(newLines) {
+      if (_positionUpdateTimer) clearTimeout(_positionUpdateTimer);
+      _positionUpdateTimer = setTimeout(function() {
 
+        // ── Step 1: Remove closed positions (in activePositions but not in newLines)
+        const newIds = new Set(newLines.map(function(p) { return p.positionId; }));
+        Object.keys(activePositions).forEach(function(id) {
+          if (!newIds.has(parseInt(id))) {
+            try {
+              const p = activePositions[id];
+              if (p.entryLine) candlestickSeries.removePriceLine(p.entryLine);
+              if (p.slLine)    candlestickSeries.removePriceLine(p.slLine);
+              if (p.tpLine)    candlestickSeries.removePriceLine(p.tpLine);
+            } catch(e) {}
+            delete activePositions[id];
+            delete lastTapTime[id];
+          }
+        });
+
+        // ── Step 2: Add only new positions (not already in activePositions)
+        positionLines = newLines;
+        newLines.forEach(function(pos) {
+          const id = pos.positionId;
+          if (activePositions[id]) return; // already drawn, skip
+
+          const isBuy = pos.side === 1;
+          const entryLine = candlestickSeries.createPriceLine({
+            price: pos.price,
+            color: pos.color,
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Solid,
+            axisLabelVisible: true,
+            title: pos.label,
+          });
+
+          const defaultDist = DEFAULT_PIPS * pip;
+          const slPrice = (pos.sl != null && pos.sl !== 0)
+            ? pos.sl
+            : (isBuy ? pos.price - defaultDist : pos.price + defaultDist);
+          const tpPrice = (pos.tp != null && pos.tp !== 0)
+            ? pos.tp
+            : (isBuy ? pos.price + defaultDist : pos.price - defaultDist);
+
+          activePositions[id] = {
+            entryLine: entryLine,
+            slLine: null,
+            tpLine: null,
+            slPrice: slPrice,
+            tpPrice: tpPrice,
+            slEnabled: false,
+            tpEnabled: false,
+            entryPrice: pos.price,
+            color: pos.color,
+            isBuy: isBuy,
+            positionId: id,
+            label: pos.label,
+            qty: pos.qty || 1,
+          };
+
+          lastTapTime[id] = 0;
+        });
+
+      }, 100);
+    }
     ${_getChartFunctions()}
     ${_getBottomSheetFunctions()}
     ${_getPositionFunctions()}

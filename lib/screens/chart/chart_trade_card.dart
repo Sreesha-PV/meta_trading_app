@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:netdania/app/config/theme/app_color.dart';
 import 'package:netdania/app/models/instrument_model.dart';
+import 'package:netdania/app/modules/order/controller/place_order_controller.dart';
 import 'package:netdania/screens/chart/chart_controller.dart';
 
 class ChartTradeCard extends StatefulWidget {
@@ -23,25 +26,34 @@ class ChartTradeCard extends StatefulWidget {
 }
 
 class _ChartTradeCardState extends State<ChartTradeCard> {
-  double _lotSize = 0.01;
   static const double _minLot = 0.01;
   static const double _maxLot = 100.0;
   static const double _step = 0.01;
 
+  late final PlaceOrderController c;
+
+  @override
+  void initState() {
+    super.initState();
+    c = Get.put(PlaceOrderController(), permanent: true);
+
+    if (widget.selectedInstrument != null) {
+      c.symbol.value = widget.selectedInstrument!.code;
+    }
+  }
+
   void _incrementLot() {
-    setState(() {
-      _lotSize = double.parse(
-        (_lotSize + _step).clamp(_minLot, _maxLot).toStringAsFixed(2),
-      );
-    });
+    final newVol = c.volume.value + _step;
+    if (newVol <= _maxLot) {
+      c.volume.value = double.parse(newVol.toStringAsFixed(2));
+    }
   }
 
   void _decrementLot() {
-    setState(() {
-      _lotSize = double.parse(
-        (_lotSize - _step).clamp(_minLot, _maxLot).toStringAsFixed(2),
-      );
-    });
+    final newVol = c.volume.value - _step;
+    if (newVol >= _minLot) {
+      c.volume.value = double.parse(newVol.toStringAsFixed(2));
+    }
   }
 
   @override
@@ -85,10 +97,7 @@ class _ChartTradeCardState extends State<ChartTradeCard> {
       children: [
         Text(
           widget.selectedInstrument?.code ?? widget.controller.currentSymbol,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         GestureDetector(
           onTap: widget.onClose,
@@ -99,56 +108,56 @@ class _ChartTradeCardState extends State<ChartTradeCard> {
   }
 
   Widget _buildLotSelector() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        children: [
-          // Label
-          const Text(
-            'Lot Size',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const Spacer(),
-          // Decrement Button
-          _buildArrowButton(
-            icon: Icons.chevron_left,
-            onTap: _lotSize > _minLot ? _decrementLot : null,
-          ),
-          const SizedBox(width: 8),
-          // Lot Value
-          Container(
-            width: 64,
-            alignment: Alignment.center,
-            child: Text(
-              _lotSize.toStringAsFixed(2),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'monospace',
-                color: Colors.black87,
+    return Obx(() {
+      final lotSize = c.volume.value;
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          children: [
+            const Text(
+              'Lot Size',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          // Increment Button
-          _buildArrowButton(
-            icon: Icons.chevron_right,
-            onTap: _lotSize < _maxLot ? _incrementLot : null,
-          ),
-        ],
-      ),
-    );
+            const Spacer(),
+            _buildArrowButton(
+              icon: Icons.chevron_left,
+              onTap: lotSize > _minLot ? _decrementLot : null,
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 64,
+              alignment: Alignment.center,
+              child: Text(
+                lotSize.toStringAsFixed(2),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'monospace',
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            _buildArrowButton(
+              icon: Icons.chevron_right,
+              onTap: lotSize < _maxLot ? _incrementLot : null,
+            ),
+          ],
+        ),
+      );
+    });
   }
+
 
   Widget _buildArrowButton({
     required IconData icon,
@@ -167,15 +176,16 @@ class _ChartTradeCardState extends State<ChartTradeCard> {
           border: Border.all(
             color: enabled ? Colors.grey.shade400 : Colors.grey.shade200,
           ),
-          boxShadow: enabled
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : [],
+          boxShadow:
+              enabled
+                  ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                  : [],
         ),
         child: Icon(
           icon,
@@ -204,14 +214,15 @@ class _ChartTradeCardState extends State<ChartTradeCard> {
   Widget _buildSellButton(double? bid, String bidText) {
     final bool enabled = bid != null;
     return GestureDetector(
-      onTap: enabled ? () => widget.onSell(bid!, _lotSize) : null,
+      onTap: enabled ? () => c.placeOrder(false, navigateAway: false) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: enabled
-              ? const Color(0xFFef5350)
-              : const Color(0xFFef5350).withOpacity(0.4),
+          color:
+              enabled
+                  ? const Color(0xFFef5350)
+                  : const Color(0xFFef5350).withOpacity(0.4),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -244,14 +255,15 @@ class _ChartTradeCardState extends State<ChartTradeCard> {
   Widget _buildBuyButton(double? ask, String askText) {
     final bool enabled = ask != null;
     return GestureDetector(
-      onTap: enabled ? () => widget.onBuy(ask!, _lotSize) : null,
+      onTap: enabled ? () => c.placeOrder(true, navigateAway: false) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: enabled
-              ? const Color(0xFF26a69a)
-              : const Color(0xFF26a69a).withOpacity(0.4),
+          color:
+              enabled
+                  ? const Color(0xFF26a69a)
+                  : const Color(0xFF26a69a).withOpacity(0.4),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(

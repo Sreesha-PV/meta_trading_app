@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -23,17 +24,73 @@ class ChartWebView extends StatefulWidget {
 class _ChartWebViewState extends State<ChartWebView> {
   late WebViewController _webViewController;
   bool _isLoadingMoreData = false;
+  Worker? _positionWorker;
+  Timer? _positionDebounce;
 
   @override
   void initState() {
     super.initState();
     _setupWebViewController();
 
-    // Listen to data changes
     widget.controller.dataStream.listen((_) {
-      if (mounted) {
-        _reloadChart();
+      if (mounted) _reloadChart();
+    });
+
+    _listenToPositionChanges();
+  }
+
+  @override
+  void dispose() {
+    _positionWorker?.dispose();
+    _positionDebounce?.cancel();
+    super.dispose();
+  }
+
+  void _listenToPositionChanges() {
+    try {
+      final positionsController = Get.find<PositionsController>();
+      _positionWorker = ever(positionsController.positionOrders, (_) {
+        if (!mounted) return;
+        // Debounce rapid successive calls
+        _positionDebounce?.cancel();
+        _positionDebounce = Timer(const Duration(milliseconds: 200), () {
+          if (mounted) _pushPositionLinesToChart(positionsController);
+        });
+      });
+    } catch (e) {
+      print('⚠️ PositionsController not found: $e');
+    }
+  }
+
+  void _pushPositionLinesToChart(PositionsController positionsController) {
+    final instrument = widget.controller.selectedInstrument;
+    if (instrument == null) return;
+
+    final lines =
+        positionsController.positionOrders
+            .where((p) => p.instrumentId == instrument.instrumentId)
+            .map(
+              (p) => {
+                'price': p.orderPrice,
+                'color': p.side == 1 ? '#26a69a' : '#ef5350',
+                'label': '${p.side == 1 ? "▲ BUY" : "▼ SELL"} #${p.positionId}',
+                'positionId': p.positionId,
+                'side': p.side,
+                'qty': p.positionQty,
+                'sl': null,
+                'tp': null,
+              },
+            )
+            .toList();
+
+    final jsCode = '''
+      if (typeof updatePositionLines === 'function') {
+        updatePositionLines(${jsonEncode(lines)});
       }
+    ''';
+
+    _webViewController.runJavaScript(jsCode).catchError((e) {
+      print('❌ Error pushing position lines: $e');
     });
   }
 
@@ -55,6 +112,11 @@ class _ChartWebViewState extends State<ChartWebView> {
     if (message.message == 'chart_initialized') {
       widget.controller.setChartInitialized(true);
       print('✅ Chart initialized successfully');
+
+      // try {
+      //   final positionsController = Get.find<PositionsController>();
+      //   _pushPositionLinesToChart(positionsController);
+      // } catch (_) {}
     } else if (message.message.startsWith('load_more_data:')) {
       final timestamp = message.message.split(':')[1];
       _loadMoreHistoricalData(int.parse(timestamp));
@@ -85,9 +147,7 @@ class _ChartWebViewState extends State<ChartWebView> {
       return;
     }
 
-    setState(() {
-      _isLoadingMoreData = true;
-    });
+    setState(() => _isLoadingMoreData = true);
     widget.onLoadingStateChanged?.call(true);
 
     print(
@@ -105,7 +165,6 @@ class _ChartWebViewState extends State<ChartWebView> {
             prependHistoricalData(${jsonEncode(newCandles)});
           }
         ''';
-
         _webViewController.runJavaScript(jsCode).catchError((e) {
           print('❌ Error prepending data: $e');
         });
@@ -125,9 +184,7 @@ class _ChartWebViewState extends State<ChartWebView> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoadingMoreData = false;
-        });
+        setState(() => _isLoadingMoreData = false);
         widget.onLoadingStateChanged?.call(false);
       }
     }
@@ -142,7 +199,6 @@ class _ChartWebViewState extends State<ChartWebView> {
 
     if (mounted) {
       final dotPosition = widget.controller.currentDotPosition;
-      // print('🔢 dotPosition: $dotPosition');
       final slText = sl != null ? sl.toStringAsFixed(dotPosition) : 'None';
       final tpText = tp != null ? tp.toStringAsFixed(dotPosition) : 'None';
 
@@ -171,13 +227,11 @@ class _ChartWebViewState extends State<ChartWebView> {
 
   void pushCandle(Map<String, dynamic> candle) {
     if (!mounted) return;
-
     final jsCode = '''
       if (typeof updateChart === 'function') {
         updateChart(${jsonEncode(candle)});
       }
     ''';
-
     try {
       _webViewController.runJavaScript(jsCode);
     } catch (e) {
@@ -188,10 +242,10 @@ class _ChartWebViewState extends State<ChartWebView> {
   void pushLivePrice(double bid, double ask) {
     final mid = (bid + ask) / 2;
     final jsCode = '''
-    if (typeof updateLivePrice === 'function') {
-      updateLivePrice($mid);
-    }
-  ''';
+      if (typeof updateLivePrice === 'function') {
+        updateLivePrice($mid);
+      }
+    ''';
     try {
       _webViewController.runJavaScript(jsCode);
     } catch (e) {}
@@ -203,7 +257,6 @@ class _ChartWebViewState extends State<ChartWebView> {
         changeIndicator('$indicator');
       }
     ''';
-
     try {
       _webViewController.runJavaScript(jsCode);
     } catch (e) {

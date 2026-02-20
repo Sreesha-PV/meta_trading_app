@@ -321,7 +321,7 @@ class TradingChartController extends GetxController {
 
     _tickerData.value = data;
 
-    debugPrint('✅ Updated: Sell=$bid, Buy=$ask, Spread=${spread.value}');
+    // debugPrint('✅ Updated: Sell=$bid, Buy=$ask, Spread=${spread.value}');
   }
 
   Future<void> subscribeToSymbols(List<String> symbols) async {

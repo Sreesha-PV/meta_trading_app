@@ -11,10 +11,10 @@ class LoginSignupPage extends StatelessWidget {
   LoginSignupPage({super.key}) {
     // authController.emailController.text = 'Enid.Powlowski62@hotmail.com';
     // authController.passwordController.text = 'rootroot';
-    // authController.emailController.text = 'Ova23@gmail.com';
-    // authController.passwordController.text = 'rootroot';
-    authController.emailController.text = 'test1@gmail.com';
-    authController.passwordController.text = '12345678';
+    authController.emailController.text = 'Ova23@gmail.com';
+    authController.passwordController.text = 'rootroot';
+    // authController.emailController.text = 'test1@gmail.com';
+    // authController.passwordController.text = '12345678';
   }
   @override
   Widget build(BuildContext context) {

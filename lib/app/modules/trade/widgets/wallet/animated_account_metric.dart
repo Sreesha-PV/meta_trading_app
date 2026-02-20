@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/utils/animation_constants.dart';
 
-class AnimatedAccountMetric extends StatelessWidget {
+class AnimatedAccountMetric extends StatefulWidget {
   final String label;
   final double value;
   final Color? valueColor;
@@ -16,6 +17,51 @@ class AnimatedAccountMetric extends StatelessWidget {
   });
 
   @override
+  State<AnimatedAccountMetric> createState() => _AnimatedAccountMetricState();
+}
+
+class _AnimatedAccountMetricState extends State<AnimatedAccountMetric>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  late double _previousValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _previousValue = widget.value;
+    _controller = AnimationController(
+      duration: AnimationConstants.counterDuration,
+      vsync: this,
+    );
+    _animation = Tween<double>(
+      begin: widget.value,
+      end: widget.value,
+    ).animate(CurvedAnimation(parent: _controller, curve: AnimationConstants.curve));
+
+  }
+
+  @override
+  void didUpdateWidget(AnimatedAccountMetric oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _animation = Tween<double>(
+        begin: _previousValue,
+        end: widget.value,
+      ).animate(CurvedAnimation(parent: _controller, curve: AnimationConstants.curve));
+
+      _controller.forward(from: 0);
+      _previousValue = widget.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 3),
@@ -23,24 +69,25 @@ class AnimatedAccountMetric extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            label,
+            widget.label,
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.w400,
               fontSize: 16,
             ),
           ),
-          TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeOutCubic,
-            tween: Tween<double>(begin: value, end: value),
-            builder: (context, animatedValue, child) {
-              return Text(
-                animatedValue.toStringAsFixed(decimalPlaces),
+          AnimatedBuilder(
+            animation: _animation,
+            builder: (context, _) {
+              return AnimatedDefaultTextStyle(
+                duration: AnimationConstants.colorDuration,
                 style: TextStyle(
-                  color: valueColor ?? AppColors.textPrimary,
+                  color: widget.valueColor ?? AppColors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
+                ),
+                child: Text(
+                  _animation.value.toStringAsFixed(widget.decimalPlaces),
                 ),
               );
             },

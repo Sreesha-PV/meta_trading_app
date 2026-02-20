@@ -34,7 +34,7 @@ class PlaceOrderController extends GetxController {
   final tp = 0.0.obs;
   final isEditingVolume = false.obs;
   final volumeTextController = TextEditingController();
-
+  final FocusNode volumeFocusNode = FocusNode();
   // final expirationMonth = '01'.obs;
   // final expirationDay = '01'.obs;
   // final expirationYear = DateTime.now().year.toString().obs;
@@ -50,7 +50,7 @@ class PlaceOrderController extends GetxController {
   final slController = TextEditingController();
   final tpController = TextEditingController();
   // final priceController = TextEditingController();
-  
+
   final instDetails = <InstrumentDetailsModel>[].obs;
 
   late TradingChartController tradingController;
@@ -113,8 +113,16 @@ class PlaceOrderController extends GetxController {
     });
 
     super.onInit();
+    volumeFocusNode.addListener(() {
+      if (!volumeFocusNode.hasFocus) {
+        final newVol = double.tryParse(volumeTextController.text);
+        if (newVol != null && newVol >= 0.01) {
+          volume.value = newVol;
+        }
+        isEditingVolume.value = false;
+      }
+    });
   }
-
 
   void setSymbol(String newSymbol) {
     if (symbol.value != newSymbol) {
@@ -139,13 +147,9 @@ class PlaceOrderController extends GetxController {
 
   int getDotPositionForSymbol(String symbolName) {
     final ticker = tradingController.getTicker(symbolName);
-
-    // Get dot_position from ticker
     if (ticker != null && ticker['dot_position'] != null) {
       return int.tryParse(ticker['dot_position'].toString()) ?? 5;
     }
-
-    // Fallback to default
     return 5;
   }
 
@@ -258,33 +262,28 @@ class PlaceOrderController extends GetxController {
     }
   }
 
-
-
-
-  Future<void> placeOrder(bool isBuy) async {
-
-    
+  Future<void> placeOrder(bool isBuy, {bool navigateAway = true}) async {
     if (volume.value <= 0) {
-      Get.snackbar('Error', 'Volume must be greater than 0',backgroundColor: AppColors.error);
+      Get.snackbar(
+        'Error',
+        'Volume must be greater than 0',
+        backgroundColor: AppColors.error,
+      );
       return;
     }
 
-    
-
-
-
     final accountController = Get.find<AccountController>();
     final walletController = Get.find<WalletController>();
-    
-if (walletController.balance <= 0) {
-  Get.snackbar(
-    'X Error',
-    'Insufficient margin to trade',
-    backgroundColor: AppColors.error,
-    colorText: AppColors.background,
-  );
-  return;
-}
+
+    if (walletController.balance <= 0) {
+      Get.snackbar(
+        'X Error',
+        'Insufficient margin to trade',
+        backgroundColor: AppColors.error,
+        colorText: AppColors.background,
+      );
+      return;
+    }
 
     if (accountController.selectedAccountId.value <= 0) {
       Get.snackbar('Error', 'No account selected');
@@ -295,7 +294,6 @@ if (walletController.balance <= 0) {
 
     print("Placing order for Type: ${selectedOrderType.value}");
 
-    // If no account is selected
     if (accountId == 0) {
       Get.snackbar('Error', 'No account selected');
       return;
@@ -303,8 +301,6 @@ if (walletController.balance <= 0) {
 
     await tradingController.subscribeToSymbols([symbol.value.toUpperCase()]);
 
-    // -------------------------------------------------------
-    // Get instrument dynamically
     final instrument = tradingController.getInstrumentByCode(symbol.value);
     if (instrument == null) {
       Get.snackbar('Error', 'Instrument not found for ${symbol.value}');
@@ -312,17 +308,8 @@ if (walletController.balance <= 0) {
     }
     final instrumentId = instrument.instrumentId;
 
-    // final orderType = mapDropdownToOrderType(selectedOrderType.value);
-
-    // ---------------- Get Price ----------------
     final ticker = tradingController.tickers[symbol.value.toUpperCase()];
 
-    // final price =
-    //     isBuy
-    //         ? double.tryParse(ticker?['ask']?.toString() ?? '0') ?? 0
-    //         : double.tryParse(ticker?['bid']?.toString() ?? '0') ?? 0;
-
-    // ---------------- Parse SL / TP from TextFields ----------------
     final stopPrice = double.tryParse(slController.text) ?? 0.0;
     final limitPrice = double.tryParse(tpController.text) ?? 0.0;
 
@@ -340,17 +327,15 @@ if (walletController.balance <= 0) {
     } else {
       orderPrice = double.tryParse(priceController.text) ?? 0;
       if (orderPrice <= 0) {
-        Get.snackbar('X Error', 'Please enter a valid price for your order',backgroundColor: AppColors.error,colorText: AppColors.background);
+        Get.snackbar(
+          'X Error',
+          'Please enter a valid price for your order',
+          backgroundColor: AppColors.error,
+          colorText: AppColors.background,
+        );
         return;
       }
     }
-
-
-    // ---------------- Create Order Model ----------------
-    // final int timeInForceId =
-    // orderType == OrderType.Market
-    //     ? mapFillPolicyToTIF(selectedFillPolicy.value)
-    //     : mapExpirationToTIF(selectedExpiration.value);
     final int timeInForceId =
         orderType == OrderType.Market
             ? mapFillPolicyToTIF(selectedFillPolicy.value)
@@ -363,12 +348,16 @@ if (walletController.balance <= 0) {
 
     if (tif == 3 || tif == 4) {
       if (exp == null) {
-        Get.snackbar('X Validation error', 'Expiration date is required',backgroundColor: AppColors.error,colorText: AppColors.background);
+        Get.snackbar(
+          'X Validation error',
+          'Expiration date is required',
+          backgroundColor: AppColors.error,
+          colorText: AppColors.background,
+        );
         return;
       }
 
       if (tif == 3) {
-        // GTD → end of day
         expiryDateTime =
             DateTime(
               exp.year,
@@ -379,11 +368,9 @@ if (walletController.balance <= 0) {
               59,
             ).toUtc().toIso8601String();
       } else {
-        // GTDT → exact datetime
         expiryDateTime = exp.toUtc().toIso8601String();
       }
     }
-
 
     print('TIF: $timeInForceId');
     print('expiryDateTime: $expiryDateTime');
@@ -392,28 +379,44 @@ if (walletController.balance <= 0) {
     final currentBid = double.tryParse(ticker?['bid']?.toString() ?? '0') ?? 0;
 
     if (isBuy) {
-      if (stopPrice > 0 && stopPrice >= currentBid ) {
-        Get.snackbar('X Error', 'SL must be below market price',backgroundColor: AppColors.error,colorText: AppColors.background);
+      if (stopPrice > 0 && stopPrice >= currentBid) {
+        Get.snackbar(
+          'X Error',
+          'SL must be below market price',
+          backgroundColor: AppColors.error,
+          colorText: AppColors.background,
+        );
         return;
       }
       if (limitPrice > 0 && limitPrice <= currentAsk) {
-        Get.snackbar('X Error', 'TP must be above market price',backgroundColor: AppColors.error,colorText: AppColors.background);
+        Get.snackbar(
+          'X Error',
+          'TP must be above market price',
+          backgroundColor: AppColors.error,
+          colorText: AppColors.background,
+        );
         return;
       }
     } else {
       if (stopPrice > 0 && stopPrice <= currentAsk) {
-        Get.snackbar('X Error', 'SL must be above market price',backgroundColor: AppColors.error,colorText: AppColors.background);
+        Get.snackbar(
+          'X Error',
+          'SL must be above market price',
+          backgroundColor: AppColors.error,
+          colorText: AppColors.background,
+        );
         return;
       }
       if (limitPrice > 0 && limitPrice >= currentBid) {
-        Get.snackbar('X Error', 'TP must be below market price',backgroundColor: AppColors.error,colorText: AppColors.background);
+        Get.snackbar(
+          'X Error',
+          'TP must be below market price',
+          backgroundColor: AppColors.error,
+          colorText: AppColors.background,
+        );
         return;
       }
     }
-
-
-    
-
 
     final order = OrderRequestModel(
       accountId: accountId,
@@ -432,25 +435,11 @@ if (walletController.balance <= 0) {
       // expiryDateTime: null
     );
 
-    // ---------------- Send Order ----------------
     final success = await OrderService.placeOrder(order);
-
-// if (success) {
-//   final orderController = Get.find<OrderController>();
-//   final positionController = Get.find<PositionsController>();
-
-//   await orderController.fetchPendingOrders(accountId);
-//   await positionController.loadPositions();
 
     if (success) {
       final orderController = Get.find<OrderController>();
       orderController.addOrder(order);
-// await orderController.fetchPendingOrders(accountId);
-// await Get.find<PositionsController>().loadPositions();
-
-//     final orderController = Get.find<OrderController>();
-// await orderController.fetchPendingOrders(accountId);
-
       sl.value = 0.0;
       tp.value = 0.0;
       slController.clear();
@@ -461,21 +450,22 @@ if (walletController.balance <= 0) {
       Get.snackbar(
         'Success',
         'Order placed successfully',
-        backgroundColor: AppColors.success,colorText: AppColors.background
+        backgroundColor: AppColors.success,
+        colorText: AppColors.background,
       );
-      // Get.until((route) => route.settings.name == '/main' || route.isFirst);
-      Get.until((route) => route.isFirst);
-      MainTabView.selectedIndexNotifier.value = 2;
+      if (navigateAway) {
+        Get.until((route) => route.isFirst);
+        MainTabView.selectedIndexNotifier.value = 2;
+      }
     } else {
       Get.snackbar(
         'X Error',
         'Order placement failed',
-        backgroundColor: AppColors.error,colorText: AppColors.background
+        backgroundColor: AppColors.error,
+        colorText: AppColors.background,
       );
     }
   }
-
-
 
   void changeSymbol(InstrumentModel instrument) {
     symbol.value = instrument.code;
@@ -483,6 +473,7 @@ if (walletController.balance <= 0) {
 
   @override
   void onClose() {
+    volumeFocusNode.dispose();
     slController.dispose();
     tpController.dispose();
     priceController.dispose();
@@ -492,9 +483,9 @@ if (walletController.balance <= 0) {
   int mapFillPolicyToTIF(String policy) {
     switch (policy) {
       case 'Fill or Kill':
-        return 11; // FOK
+        return 11;
       case 'Immediate or Cancel':
-        return 12; // IOC
+        return 12;
       default:
         return 11;
     }
@@ -516,13 +507,12 @@ if (walletController.balance <= 0) {
   }
 }
 
-
-
 class OrderTypeSide {
   final OrderType type;
   final int side; // 1 = Buy, 2 = Sell, 0 = Market/undefined
   OrderTypeSide(this.type, this.side);
 }
+
 OrderTypeSide mapIntToTypeSide(int code) {
   switch (code) {
     case 1:
@@ -539,4 +529,3 @@ OrderTypeSide mapIntToTypeSide(int code) {
       return OrderTypeSide(OrderType.Unknown, 0); // Unknown
   }
 }
-

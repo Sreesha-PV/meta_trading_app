@@ -13,6 +13,7 @@ import 'package:netdania/app/modules/trade/components/pending_ordertile.dart';
 import 'package:netdania/app/modules/trade/helper/symbol_utils.dart';
 import 'package:netdania/app/getX/order_getX.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:netdania/utils/animation_constants.dart';
 
 class TradingPage extends StatefulWidget {
   final String symbol;
@@ -32,24 +33,9 @@ class _TradingPageState extends State<TradingPage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  late AnimationController _plAnimationController;
-  late Animation<double> _plAnimation;
-  double _previousTotalPL = 0.0;
-  bool _isFirstBuild = true;
-
   @override
   void initState() {
     super.initState();
-    _plAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _plAnimation = Tween<double>(begin: 0, end: 0).animate(
-      CurvedAnimation(
-        parent: _plAnimationController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchAndSubscribe();
@@ -58,7 +44,6 @@ class _TradingPageState extends State<TradingPage>
 
   @override
   void dispose() {
-    _plAnimationController.dispose();
     super.dispose();
   }
 
@@ -173,39 +158,30 @@ class _TradingPageState extends State<TradingPage>
           tradingController,
         );
 
-        if (_isFirstBuild) {
-          _previousTotalPL = totalPL;
-          _isFirstBuild = false;
-        }
-
-        if (totalPL != _previousTotalPL) {
-          _plAnimation = Tween<double>(
-            begin: _previousTotalPL,
-            end: totalPL,
-          ).animate(
-            CurvedAnimation(
-              parent: _plAnimationController,
-              curve: Curves.easeOutCubic,
-            ),
-          );
-          _plAnimationController.forward(from: 0);
-          _previousTotalPL = totalPL;
-        }
-
-        return AnimatedBuilder(
-          animation: _plAnimation,
-          builder: (context, child) {
-            final animatedValue = _plAnimation.value;
-            return Text(
-              '${animatedValue.toStringAsFixed(2)} USD',
-              style: TextStyle(
-                color: animatedValue >= 0 ? Colors.blue : Colors.red,
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
-              ),
-            );
-          },
-        );
+        // return AnimatedBuilder(
+        //   animation: _plAnimation,
+        //   builder: (context, child) {
+        //     final animatedValue = _plAnimation.value;
+        //     return Text(
+        //       '${animatedValue.toStringAsFixed(2)} USD',
+        //       style: TextStyle(
+        //         color: animatedValue >= 0 ? Colors.blue : Colors.red,
+        //         fontWeight: FontWeight.w600,
+        //         fontSize: 20,
+        //       ),
+        //     );
+        //   },
+        // );
+        // return AnimatedDefaultTextStyle(
+        //   duration: const Duration(milliseconds: 300),
+        //   style: TextStyle(
+        //     color: totalPL >= 0 ? Colors.blue : Colors.red,
+        //     fontWeight: FontWeight.w600,
+        //     fontSize: 20,
+        //   ),
+        //   child: Text('${totalPL.toStringAsFixed(2)} USD'),
+        // );
+        return _AnimatedPLText(value: totalPL);
       }),
       actions: [
         PopupMenuButton<String>(
@@ -668,6 +644,76 @@ class _TradingPageState extends State<TradingPage>
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+}
+
+class _AnimatedPLText extends StatefulWidget {
+  final double value;
+  const _AnimatedPLText({required this.value});
+
+  @override
+  State<_AnimatedPLText> createState() => _AnimatedPLTextState();
+}
+
+class _AnimatedPLTextState extends State<_AnimatedPLText>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  late double _previousValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _previousValue = widget.value;
+    _controller = AnimationController(
+      duration: AnimationConstants.counterDuration,
+      vsync: this,
+    );
+    _animation = Tween<double>(
+      begin: widget.value,
+      end: widget.value,
+    ).animate(CurvedAnimation(parent: _controller, curve: AnimationConstants.curve));
+
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedPLText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _animation = Tween<double>(
+        begin: _previousValue,
+        end: widget.value,
+      ).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+      );
+      _controller.forward(from: 0);
+      _previousValue = widget.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, _) {
+        final v = _animation.value;
+        return AnimatedDefaultTextStyle(
+          duration: AnimationConstants.colorDuration,
+          style: TextStyle(
+            color: v >= 0 ? Colors.blue : Colors.red,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+          child: Text('${v.toStringAsFixed(2)} USD'),
         );
       },
     );

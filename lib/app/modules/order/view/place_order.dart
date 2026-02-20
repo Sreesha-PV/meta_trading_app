@@ -24,6 +24,7 @@ class PlaceOrder extends StatelessWidget {
     required this.currentSellPrice,
   });
 
+
   @override
   Widget build(BuildContext context) {
     final c = Get.put(PlaceOrderController(), permanent: true);
@@ -65,7 +66,6 @@ class PlaceOrder extends StatelessWidget {
     );
   }
 
-  /// ---------------- DESKTOP ----------------
   Widget _buildDesktopLayout(BuildContext context, PlaceOrderController c) {
     return Scaffold(
       // backgroundColor: Colors.white,
@@ -471,6 +471,7 @@ class PlaceOrder extends StatelessWidget {
                         ),
                         child: CupertinoTextField(
                           controller: c.volumeTextController,
+                          focusNode: c.volumeFocusNode,
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),

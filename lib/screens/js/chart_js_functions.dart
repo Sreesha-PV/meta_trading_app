@@ -67,7 +67,7 @@ function initChart() {
     setTimeout(function() {
       candlestickSeries.setData(chartData);
       addLivePriceLine();
-      drawPositionLines(positionLines);
+      renderPositionLines();       
       setupInteractionListeners();
 
       chart.subscribeCrosshairMove(function(param) {
@@ -102,7 +102,8 @@ function initChart() {
 
       showLatestPrice();
       isChartReady = true;
-      
+      renderPositionLines(); // ← ensures positions drawn before notifying Flutter
+
       if (window.FlutterChannel) {
         window.FlutterChannel.postMessage('chart_initialized');
       }
