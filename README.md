@@ -20,13 +20,25 @@ Screenshots
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="home.png.jpeg" width="180"/>
+  <img src="login(light).png.jpeg" width="180"/>
   &nbsp;
-  <img src="chart.png.jpeg" width="180"/>
+  <img src="login.png.jpeg" width="180"/>
+  &nbsp;
+  <img src="home.png.jpeg" width="180"/>
   &nbsp;
   <img src="homepage.png.jpeg" width="180"/>
   &nbsp;
   <img src="edit%20symbol.png.jpeg" width="180"/>
+  &nbsp;
+  <img src="order.png.jpeg" width="180"/>
+  &nbsp;
+  <img src="orderclose.png.jpeg" width="180"/>
+  &nbsp;
+  <img src="ordermodify.png.jpeg" width="180"/>
+  &nbsp;
+  <img src="chart.png.jpeg" width="180"/>
+  &nbsp;
+  
 </p>
 
 🛠️ Tech Stack
