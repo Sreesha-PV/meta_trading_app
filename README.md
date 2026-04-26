@@ -26,7 +26,7 @@ Screenshots
   &nbsp;
   <img src="home.png.jpeg" width="180" height="400"/>
   &nbsp;
-  <img src="homepage.png.jpeg" width="180" height="415"/>
+  <img src="homepage.png.jpeg" width="180" height="420"/>
   &nbsp;
   <img src="edit%20symbol.png.jpeg" width="180" height="400"/>
   &nbsp;
