@@ -14,6 +14,12 @@ A professional-grade mobile trading application built with Flutter, enabling rea
 🌙 Theme Support — Light and dark mode
 🔍 Symbol Search — Search and filter trading instruments
 
+
+
+Screenshots
+Home
+![Home](home.png.jpeg)
+
 🛠️ Tech Stack
 Technology                  Usage
 Flutter                  Cross-platform UI framework
