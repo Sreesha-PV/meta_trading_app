@@ -20,23 +20,23 @@ Screenshots
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="login(light).png.png" width="180"/>
+  <img src="login(light).png.png" width="180" height="400"/>
   &nbsp;
-  <img src="login.png.png" width="180"/>
+  <img src="login.png.png" width="180" height="400"/>
   &nbsp;
-  <img src="home.png.jpeg" width="180"/>
+  <img src="home.png.jpeg" width="180" height="400"/>
   &nbsp;
-  <img src="homepage.png.jpeg" width="180"/>
+  <img src="homepage.png.jpeg" width="180" height="400/>
   &nbsp;
-  <img src="edit%20symbol.png.jpeg" width="180"/>
+  <img src="edit%20symbol.png.jpeg" width="180" height="400/>
   &nbsp;
-  <img src="order.png.jpeg" width="180"/>
+  <img src="order.png.jpeg" width="180" height="400/>
   &nbsp;
-  <img src="orderclose.png.jpeg" width="180"/>
+  <img src="orderclose.png.jpeg" width="180" height="400/>
   &nbsp;
-  <img src="ordermodify.png.jpeg" width="180"/>
+  <img src="ordermodify.png.jpeg" width="180" height="400/>
   &nbsp;
-  <img src="chart.png.jpeg" width="180"/>
+  <img src="chart.png.jpeg" width="180" height="400"/>
   &nbsp;
   
 </p>
