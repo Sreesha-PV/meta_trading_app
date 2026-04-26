@@ -20,10 +20,8 @@ Screenshots
 ## 📸 Screenshots
 
 <p align="center">
-  Login(Light theme)
   <img src="login(light).png.png" width="180"/>
   &nbsp;
-  Login(Dark theme)
   <img src="login.png.png" width="180"/>
   &nbsp;
   <img src="home.png.jpeg" width="180"/>
