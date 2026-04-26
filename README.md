@@ -20,13 +20,13 @@ Screenshots
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="login(light).png.png" width="180" height="380"/>
+  <img src="login(light).png.png" width="180" height="390"/>
   &nbsp;
-  <img src="login.png.png" width="180" height="380"/>
+  <img src="login.png.png" width="180" height="390"/>
   &nbsp;
   <img src="home.png.jpeg" width="180" height="400"/>
   &nbsp;
-  <img src="homepage.png.jpeg" width="180" height="400"/>
+  <img src="homepage.png.jpeg" width="180" height="410"/>
   &nbsp;
   <img src="edit%20symbol.png.jpeg" width="180" height="400"/>
   &nbsp;
