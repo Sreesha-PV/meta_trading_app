@@ -66,8 +66,7 @@ A running backend API server
 
 Installation
 bash# Clone the repository
-git clone https://github.com/your-username/meta-trade.git
-
+git clone https://github.com/Sreesha-PV/meta_trading_app.git
 # Navigate to project folder
 cd meta-trade
 
