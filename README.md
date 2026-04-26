@@ -26,15 +26,15 @@ Screenshots
   &nbsp;
   <img src="home.png.jpeg" width="180" height="400"/>
   &nbsp;
-  <img src="homepage.png.jpeg" width="180" height="400/>
+  <img src="homepage.png.jpeg" width="180" height="400"/>
   &nbsp;
-  <img src="edit%20symbol.png.jpeg" width="180" height="400/>
+  <img src="edit%20symbol.png.jpeg" width="180" height="400"/>
   &nbsp;
-  <img src="order.png.jpeg" width="180" height="400/>
+  <img src="order.png.jpeg" width="180" height="400"/>
   &nbsp;
-  <img src="orderclose.png.jpeg" width="180" height="400/>
+  <img src="orderclose.png.jpeg" width="180" height="400"/>
   &nbsp;
-  <img src="ordermodify.png.jpeg" width="180" height="400/>
+  <img src="ordermodify.png.jpeg" width="180" height="400"/>
   &nbsp;
   <img src="chart.png.jpeg" width="180" height="400"/>
   &nbsp;
