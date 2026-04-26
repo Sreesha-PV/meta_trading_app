@@ -20,9 +20,9 @@ Screenshots
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="login(light).png.png" width="180" height="390"/>
+  <img src="login(light).png.png" width="180" height="385"/>
   &nbsp;
-  <img src="login.png.png" width="180" height="390"/>
+  <img src="login.png.png" width="180" height="385"/>
   &nbsp;
   <img src="home.png.jpeg" width="180" height="400"/>
   &nbsp;
