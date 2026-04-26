@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:netdania/app/models/instrument_model.dart';
-import 'package:netdania/screens/services/ohlc_service.dart';
+import 'package:netdania/app/services/ohlc_service.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 enum ChartState { loading, ready, error, noData }
 
@@ -44,13 +45,50 @@ class ChartController {
   bool _canUpdate = true;
   Timer? _updateThrottleTimer;
 
+  late WebViewController _webController;
+  bool isChartInitialized = false;
+
+
+WebViewController? webController;
+
+void setWebController(WebViewController controller) {
+    _webController = controller;
+  }
+
+  // void activateTrendline() {
+  //   if (!isChartInitialized) {
+  //     print('⚠️ Chart not initialized yet');
+  //     return;
+  //   }
+  //   _webController.runJavaScript('activateTrendline();').catchError((e) {
+  //     print('❌ Failed to activate trendline: $e');
+  //   });
+  //   print('✅ Trendline activated');
+  // }
+
+
+  
+// void activateTrendline() {
+//   if (!isChartInitialized) {
+//     print('⚠️ Chart not initialized yet, queuing trendline');
+//     return;
+//   }
+
+//   try {
+//     _webController.runJavaScript('activateTrendline();');
+//     print('✅ Trendline activated');
+//   } catch (e) {
+//     print('❌ Failed to activate trendline: $e');
+//   }
+// }
+
   // Getters
   List<Map<String, dynamic>> get ohlcData => _ohlcData;
   String get currentSymbol => _currentSymbol;
   String get selectedTimeframe => _selectedTimeframe;
   String get selectedIndicator => _selectedIndicator;
   InstrumentModel? get selectedInstrument => _selectedInstrument;
-  bool get isChartInitialized => _chartInitialized;
+  // bool get isChartInitialized => _chartInitialized;
   int get currentDotPosition => _selectedInstrument?.decimalPlaces ?? 5;
   bool _instrumentSet = false;
   bool _dataReady = false;
@@ -325,3 +363,4 @@ class ChartController {
     _latestPriceController.close();
   }
 }
+

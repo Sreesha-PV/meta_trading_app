@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 // import 'package:fl_chart/fl_chart.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/app/config/theme/app_textstyle.dart';
 import 'package:netdania/app/models/instrument_model.dart';
 import 'package:netdania/app/modules/order/components/date_picker.dart';
 import 'package:netdania/app/modules/order/components/datetime_picker_sheet.dart';
@@ -57,19 +58,35 @@ class PlaceOrder extends StatelessWidget {
   ) {
     return Scaffold(
       // backgroundColor: Colors.white,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: _buildAppBar(context, c),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-        child: _buildOrderBody(context, c, padding),
+      // body: Padding(
+      //   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+      //   child: _buildOrderBody(context, c, padding),
+      // ),
+
+       body: SafeArea(
+      child: Column(
+        children: [
+       
+          Expanded(
+            child: SingleChildScrollView(
+              // padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: _buildOrderBody(context, c, padding),
+            ),
+          ),
+
+        ],
       ),
+    ),
     );
   }
 
   Widget _buildDesktopLayout(BuildContext context, PlaceOrderController c) {
     return Scaffold(
       // backgroundColor: Colors.white,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: _buildAppBar(context, c),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
@@ -113,153 +130,157 @@ class PlaceOrder extends StatelessWidget {
     PlaceOrderController c,
     EdgeInsets padding,
   ) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: padding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildOrderTypeDropdown(c),
-            Divider(
-              height: 1,
-              thickness: 0.5,
-              color: CupertinoColors.separator.withOpacity(0.3),
-            ),
-            _buildVolumeSelector(context, c),
-            const SizedBox(height: 16),
-            Obx(() {
-              return c.selectedOrderType.value == 0
-                  ? const SizedBox.shrink()
-                  : Column(
-                    children: [
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.5,
-                            child: Text(
-                              'Price',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w400,
-                              ),
+    return Padding(
+      padding: padding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildOrderTypeDropdown(c),
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            color: CupertinoColors.separator.withOpacity(0.3),
+          ),
+          _buildVolumeSelector(context, c),
+          // const SizedBox(height: 16),
+          Obx(() {
+            return c.selectedOrderType.value == 0
+                ? const SizedBox.shrink()
+                : Column(
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.5,
+                          child: Text(
+                            'Price',
+                            style: TextStyle(
+                              color: AppColors.textPrimary(context),
+                              fontSize: 17,
+                              fontWeight: FontWeight.w400,
                             ),
-                          ),
-                          Expanded(child: _buildPriceInput(c)),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  );
-            }),
-            Row(
-              children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  child: Text(
-                    'Stop Loss',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 17,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: _priceAdjuster(
-                    c,
-                    "SL",
-                    AppColors.down,
-                    c.adjustSl,
-                    c.slController,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  child: Text(
-                    'Take Profit',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: _priceAdjuster(
-                    c,
-                    "TP",
-                    AppColors.success,
-                    c.adjustTp,
-                    c.tpController,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Obx(() {
-              return c.selectedOrderType.value == 0
-                  ? _buildFillPolicyDropdown(c, context)
-                  : Row(
-                    children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.5,
-                        child: Text(
-                          'Expiration',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w400,
+                            // style: AppTextStyle.h3_400.textPrimary,
+
                           ),
                         ),
-                      ),
-                      Expanded(child: _buildExpiryDropDown(c, context)),
-                    ],
-                  );
-            }),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
-              decoration: BoxDecoration(
-                color: AppColors.lightNeutral,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Obx(() {
-                final symbol = c.symbol.value;
-                final ticker = c.tradingController.getTicker(symbol);
-                final bidRaw = ticker?['bid'];
-                final askRaw = ticker?['ask'];
-                final dotPositionRaw = ticker?['dot_position'];
-                final sell = double.tryParse(bidRaw?.toString() ?? '0') ?? 0;
-                final buy = double.tryParse(askRaw?.toString() ?? '0') ?? 0;
-                final dotPosition =
-                    int.tryParse(dotPositionRaw?.toString() ?? '5') ?? 5;
-                final color =
-                    c.tradingController.isPriceUp
-                        ? AppColors.up
-                        : AppColors.down;
-
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _formattedPrice(sell, color, dotPosition),
-                    _formattedPrice(buy, color, dotPosition),
+                        Expanded(child: _buildPriceInput(c)),
+                      ],
+                    ),
+                    // const SizedBox(height: 16),
                   ],
                 );
-              }),
+          }),
+          Row(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                child: Text(
+                  'Stop Loss',
+                  style: TextStyle(
+                    color: AppColors.textPrimary(context),
+                    fontSize: 17,
+                  ),
+                  // style: AppTextStyle.h3_400.textPrimary,
+
+                ),
+              ),
+              Expanded(
+                child: _priceAdjuster(
+                  c,
+                  "SL",
+                  AppColors.bearish,
+                  c.adjustSl,
+                  c.slController,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                child: Text(
+                  'Take Profit',
+                  style: TextStyle(
+                    color: AppColors.textPrimary(context),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  // style: AppTextStyle.h3_400.textPrimary,
+                ),
+              ),
+              Expanded(
+                child: _priceAdjuster(
+                  c,
+                  "TP",
+                  AppColors.success,
+                  c.adjustTp,
+                  c.tpController,
+                ),
+              ),
+            ],
+          ),
+          // const SizedBox(height: 16),
+          Obx(() {
+            return c.selectedOrderType.value == 0
+                ? _buildFillPolicyDropdown(c, context)
+                : Row(
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      child: Text(
+                        'Expiration',
+                        style: TextStyle(
+                          color: AppColors.textPrimary(context),
+                          fontSize: 17,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        // style: AppTextStyle.h3_400.textPrimary,
+                      ),
+                    ),
+                    Expanded(child: _buildExpiryDropDown(c, context)),
+                  ],
+                );
+          }),
+          // const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.lightNeutral,
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(height: 16),
-            Obx(() {
-              return c.selectedOrderType.value == 0
-                  ? _buildBottomButtons(c, context)
-                  : _buildBottomPlaceButton(c);
+            child: Obx(() {
+              final symbol = c.symbol.value;
+              final ticker = c.tradingController.getTicker(symbol);
+              final bidRaw = ticker?['bid'];
+              final askRaw = ticker?['ask'];
+              final dotPositionRaw = ticker?['dot_position'];
+              final sell = double.tryParse(bidRaw?.toString() ?? '0') ?? 0;
+              final buy = double.tryParse(askRaw?.toString() ?? '0') ?? 0;
+              final dotPosition =
+                  int.tryParse(dotPositionRaw?.toString() ?? '5') ?? 5;
+              final color =
+                  c.tradingController.isPriceUp
+                      ? AppColors.bullish
+                      : AppColors.bearish;
+    
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _formattedPrice(sell, color, dotPosition),
+                  _formattedPrice(buy, color, dotPosition),
+                ],
+              );
             }),
-          ],
-        ),
+          ),
+          // const SizedBox(height: 16),
+          Obx(() {
+            return c.selectedOrderType.value == 0
+                ? _buildBottomButtons(c, context)
+                : _buildBottomPlaceButton(c);
+          }),
+        ],
       ),
     );
   }
@@ -271,7 +292,7 @@ class PlaceOrder extends StatelessWidget {
   ) {
     return AppBar(
       // backgroundColor: Colors.white,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       // automaticallyImplyLeading: false,
       title: Row(
         children: [
@@ -282,12 +303,13 @@ class PlaceOrder extends StatelessWidget {
           Obx(() {
             return Text(
               c.symbol.value,
-              style: const TextStyle(
-                // color: Colors.black,
-                color: AppColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              // style: const TextStyle(
+              //   // color: Colors.black,
+              //   color: AppColors.textPrimary,
+              //   fontSize: 18,
+              //   fontWeight: FontWeight.w600,
+              // ),
+              style: AppTextStyle.h2_700.textPrimary(context),
             );
           }),
           // Text(
@@ -306,7 +328,7 @@ class PlaceOrder extends StatelessWidget {
           //   color: AppColors.textPrimary,
           // ),
           PopupMenuButton<InstrumentModel>(
-            icon: const Icon(Icons.refresh, color: AppColors.textPrimary),
+            icon: Icon(Icons.refresh, color: AppColors.textPrimary(context)),
             onSelected: (instrument) {
               c.changeSymbol(instrument);
               // Get.find<ChartController>().loadCandles(newSymbol: instrument.code);
@@ -353,7 +375,7 @@ class PlaceOrder extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 0),
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.background(Get.context!),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Obx(
@@ -371,7 +393,8 @@ class PlaceOrder extends StatelessWidget {
               color: CupertinoColors.label,
               fontWeight: FontWeight.w400,
             ),
-            dropdownColor: AppColors.background,
+            // style: AppTextStyle.h1_400.textPrimary,
+            dropdownColor: AppColors.background(Get.context!),
             borderRadius: BorderRadius.circular(12),
             elevation: 8,
             itemHeight: 48,
@@ -385,6 +408,7 @@ class PlaceOrder extends StatelessWidget {
                         fontSize: 17,
                         fontWeight: FontWeight.w400,
                       ),
+                      // style: AppTextStyle.h1_400.textPrimary,
                     ),
                   );
                 }).toList(),
@@ -410,9 +434,10 @@ class PlaceOrder extends StatelessWidget {
               onTap: () {
                 c.adjustPrice(-0.1);
               },
-              child: const Text(
+              child: Text(
                 '⎼',
                 style: TextStyle(fontSize: 24, color: AppColors.info),
+                // style: AppTextStyle.h1_400.info,
               ),
             ),
             Expanded(
@@ -435,9 +460,10 @@ class PlaceOrder extends StatelessWidget {
               onTap: () {
                 c.adjustPrice(0.1);
               },
-              child: const Text(
+              child:  Text(
                 '+',
-                style: TextStyle(fontSize: 24, color: AppColors.up),
+                style: TextStyle(fontSize: 24, color: AppColors.bullish),
+                // style: AppTextStyle.h1_400.info,
               ),
             ),
           ],
@@ -478,10 +504,11 @@ class PlaceOrder extends StatelessWidget {
                           autofocus: true,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: AppColors.textPrimary(context),
                             fontSize: 17,
                             fontWeight: FontWeight.w500,
                           ),
+                          // style: AppTextStyle.h3_500.textPrimary,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -511,10 +538,11 @@ class PlaceOrder extends StatelessWidget {
                           child: Text(
                             c.volume.value.toStringAsFixed(2),
                             style: TextStyle(
-                              color: AppColors.textPrimary,
+                              color: AppColors.textPrimary(context),
                               fontSize: 17,
                               fontWeight: FontWeight.w400,
                             ),
+                            // style: AppTextStyle.h3_400.textPrimary,
                           ),
                         ),
                       ),
@@ -537,7 +565,8 @@ class PlaceOrder extends StatelessWidget {
       onPressed: () {
         final newVol = c.volume.value + delta;
         if (newVol >= 0.01) {
-          c.volume.value = newVol;
+          // c.volume.value = newVol;
+          c.changeVolume(delta);
         }
       },
       child: Container(
@@ -553,6 +582,7 @@ class PlaceOrder extends StatelessWidget {
             fontSize: 17,
             fontWeight: FontWeight.w500,
           ),
+          // style: AppTextStyle.h3_500.primary,
         ),
       ),
     );
@@ -599,13 +629,14 @@ class PlaceOrder extends StatelessWidget {
           children: [
             GestureDetector(
               onTap: () => onChange(-0.1),
-              child: const Text(
+              child:  Text(
                 '⎼',
                 style: TextStyle(
                   fontSize: 24,
                   //  color: Colors.blue
                   color: AppColors.info,
                 ),
+                // style: AppTextStyle.h1_400.info,
               ),
             ),
             Expanded(
@@ -625,13 +656,14 @@ class PlaceOrder extends StatelessWidget {
             ),
             GestureDetector(
               onTap: () => onChange(0.1),
-              child: const Text(
+              child:  Text(
                 '+',
                 style: TextStyle(
                   fontSize: 24,
                   //  color: Colors.blue
-                  color: AppColors.up,
+                  color: AppColors.bullish,
                 ),
+                // style: AppTextStyle.h1_400.info,
               ),
             ),
           ],
@@ -651,13 +683,14 @@ class PlaceOrder extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+              Text(
               'Fill Policy',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppColors.textPrimary(context),
                 fontSize: 17,
                 fontWeight: FontWeight.w400,
               ),
+              // style: AppTextStyle.h3_400.textPrimary,
             ),
             // Spacer(),
             Obx(
@@ -665,7 +698,7 @@ class PlaceOrder extends StatelessWidget {
                 child: DropdownButton<String>(
                   value: c.selectedFillPolicy.value,
                   alignment: Alignment.centerRight,
-                  dropdownColor: AppColors.background,
+                  dropdownColor: AppColors.background(context),
                   onChanged: (v) => c.selectedFillPolicy.value = v!,
                   items:
                       policies
@@ -676,11 +709,12 @@ class PlaceOrder extends StatelessWidget {
                                 alignment: Alignment.centerRight,
                                 child: Text(
                                   val,
-                                  style: const TextStyle(
+                                  style:  TextStyle(
                                     fontSize: 16,
                                     // color: Colors.black
-                                    color: AppColors.textPrimary,
+                                    color: AppColors.textPrimary(context),
                                   ),
+                                  // style: AppTextStyle.body_400.textPrimary,
                                 ),
                               ),
                             ),
@@ -716,11 +750,11 @@ class PlaceOrder extends StatelessWidget {
                     value: c.selectedExpiration.value,
                     isExpanded: true,
                     alignment: Alignment.centerRight,
-                    dropdownColor: AppColors.background,
+                    dropdownColor: AppColors.background(context),
 
                     // THIS controls what is shown when selected
                     selectedItemBuilder: (context) {
-                      return ['GTC', 'Today', 'Specified', 'Specified day']
+                      return ['GTC', 'Today', 'Specified', 'Specified day','GTF']
                           .map(
                             (_) => Align(
                               alignment: Alignment.centerRight,
@@ -749,6 +783,7 @@ class PlaceOrder extends StatelessWidget {
 
                     items: const [
                       DropdownMenuItem(value: 'GTC', child: Text('GTC')),
+                      DropdownMenuItem(value: 'GTF', child: Text('GTF')),
                       DropdownMenuItem(value: 'Today', child: Text('Today')),
                       DropdownMenuItem(
                         value: 'Specified',
@@ -790,18 +825,19 @@ class PlaceOrder extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppColors.down,
+                      color: AppColors.bearish,
                       // borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
-                      children: const [
+                      children:  [
                         Text(
-                          'Sell by Market',
+                          'Sell by Market', 
                           style: TextStyle(
-                            color: AppColors.surface,
+                            color: AppColors.surface(context),
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
+                          // style: AppTextStyle.body_700.surface,
                         ),
                       ],
                     ),
@@ -811,23 +847,25 @@ class PlaceOrder extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
+
                     c.placeOrder(true);
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppColors.up,
+                      color: AppColors.bullish,
                       // borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
-                      children: const [
+                      children:  [
                         Text(
                           'Buy by Market',
                           style: TextStyle(
-                            color: AppColors.surface,
+                            color: AppColors.surface(context),
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
+                          //  style: AppTextStyle.body_700.surface,
                         ),
                       ],
                     ),
@@ -840,7 +878,8 @@ class PlaceOrder extends StatelessWidget {
           Text(
             'Attention! The trade will be executed at market condition. Difference with requested price may be significant!',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary(context)),
+              // style: AppTextStyle.medium_700.textSecondary,
           ),
         ],
       ),
@@ -853,7 +892,9 @@ class PlaceOrder extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       decoration: BoxDecoration(
         color: AppColors.neutral,
-        border: Border(top: BorderSide(color: Colors.grey[300]!)),
+        // border: Border(top: BorderSide(color: Colors.grey[300]!)),
+        border: Border(top: BorderSide(color: AppColors.darkTextSecondary)),
+
       ),
 
       child: Column(
@@ -861,15 +902,16 @@ class PlaceOrder extends StatelessWidget {
           GestureDetector(
             onTap: () => c.placeOrder(false),
             child: Column(
-              children: const [
+              children:  [
                 Text(
                   'Place',
                   style: TextStyle(
                     // color: Colors.red,
-                    color: AppColors.surface,
+                    color: AppColors.surface(Get.context!),
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
+                  // style: AppTextStyle.body_700.surface,
                 ),
               ],
             ),
@@ -988,7 +1030,6 @@ class PlaceOrder extends StatelessWidget {
       ),
       builder: (_) => const DateTimePickerSheet(),
     );
-
     if (result != null) {
       final c = Get.find<PlaceOrderController>();
       c.expirationDate.value = result;
@@ -1033,6 +1074,8 @@ int mapExpirationToTIF(String expiration) {
   switch (expiration) {
     case 'GTC':
       return 1;
+    case 'GTF':
+      return 2;
     case 'Today':
       return 5; // Day
     case 'Specified day':

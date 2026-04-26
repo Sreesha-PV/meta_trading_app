@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'package:netdania/screens/services/authservices.dart';
+import 'package:netdania/app/services/authservices.dart';
 import 'package:netdania/app/core/constants/urls.dart';
 
 class PriceService {

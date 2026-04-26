@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:netdania/app/models/wallet_model.dart';
-import 'package:netdania/screens/services/wallet_services.dart';
+import 'package:netdania/app/services/wallet_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WalletController extends GetxController {

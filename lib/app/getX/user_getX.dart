@@ -17,7 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/models/client_model.dart';
-import 'package:netdania/screens/services/authservices.dart';
+import 'package:netdania/app/services/authservices.dart';
 
 class UserController extends GetxController {
   var userDetails = Rx<UserProfileData?>(null);

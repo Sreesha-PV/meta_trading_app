@@ -104,11 +104,11 @@ class _DateTimePickerSheetState extends State<DateTimePickerSheet> {
             children: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("Cancel", style: TextStyle(color: AppColors.up)),
+                child: Text("Cancel", style: TextStyle(color: AppColors.bullish)),
               ),
               TextButton(
                 onPressed: _onOkPressed,
-                child: Text("OK", style: TextStyle(color: AppColors.up)),
+                child: Text("OK", style: TextStyle(color: AppColors.bullish)),
               ),
             ],
           ),

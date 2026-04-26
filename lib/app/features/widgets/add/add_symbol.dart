@@ -14,18 +14,18 @@ class AddSymbolPage extends StatelessWidget {
     PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       // backgroundColor: Colors.white,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       automaticallyImplyLeading: false,
       title: Row(
         children: [
           Icon(Icons.arrow_back,
           // color: Colors.black ,
-          color: AppColors.textPrimary,
+          color: AppColors.textPrimary(context),
           ),
-          const Expanded(
+          Expanded(
             child: Text('Add Symbol', style: TextStyle(
               // color: Colors.black
-              color: AppColors.textPrimary
+              color: AppColors.textPrimary(context)
               )),
           ),
         ],

@@ -7,7 +7,7 @@ import 'package:netdania/app/models/positions_model.dart';
 import 'package:netdania/app/models/settlement_get_model.dart';
 import 'package:netdania/app/modules/trade/helper/symbol_utils.dart';
 import 'package:netdania/app/models/order_model.dart';
-import 'package:netdania/screens/services/order_services.dart';
+import 'package:netdania/app/services/order_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
@@ -171,6 +171,11 @@ class OrderController extends GetxController {
     }
   }
 
+
+
+
+
+
   Future<void> closePendingOrder(
     int pendingOrderId,
     int accountId,
@@ -222,7 +227,7 @@ class OrderController extends GetxController {
           'Error',
           // response.message ??
           'Failed to close order',
-          backgroundColor: AppColors.down,
+          backgroundColor: AppColors.bearish,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
           duration: Duration(seconds: 3),
@@ -238,7 +243,7 @@ class OrderController extends GetxController {
       Get.snackbar(
         'Error',
         'An error occurred: ${e.toString()}',
-        backgroundColor: AppColors.down,
+        backgroundColor: AppColors.bearish,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
         duration: Duration(seconds: 3),
@@ -367,25 +372,25 @@ class OrderController extends GetxController {
         .toList();
   }
 
-  void executePendingOrder(PendingOrder po, double executedQty) {
-    pendingOrders.remove(po);
+  // void executePendingOrder(PendingOrder po, double executedQty) {
+  //   pendingOrders.remove(po);
 
-    positionOrders.add(
-      Position(
-        accountId: po.accountId,
-        instrumentId: po.instrumentId,
-        side: po.side,
-        positionId: DateTime.now().millisecondsSinceEpoch,
-        positionQty: executedQty,
-        positionInitialQty: executedQty,
-        orderPrice: po.orderPrice,
-        refPendingOrderId: po.pendingOrderId,
-        stopPrice: po.stopPrice,
-        limitPrice: po.limitPrice,
-        positionDate: po.createdAt
-      ),
-    );
-  }
+  //   positionOrders.add(
+  //     Position(
+  //       accountId: po.accountId,
+  //       instrumentId: po.instrumentId,
+  //       side: po.side,
+  //       positionId: DateTime.now().millisecondsSinceEpoch,
+  //       positionQty: executedQty,
+  //       positionInitialQty: executedQty,
+  //       orderPrice: po.orderPrice,
+  //       refPendingOrderId: po.pendingOrderId,
+  //       stopPrice: po.stopPrice,
+  //       limitPrice: po.limitPrice,
+  //       positionDate: po.createdAt
+  //     ),
+  //   );
+  // }
 
   Set<String> removedOrderIds = {};
 
@@ -554,6 +559,8 @@ class OrderController extends GetxController {
     switch (expiration) {
       case 'GTC':
         return 1;
+      case 'GTF':
+        return 2;
       case 'Today':
         return 5;
       case 'Specified day':

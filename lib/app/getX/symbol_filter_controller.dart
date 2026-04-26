@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:netdania/screens/services/symbol_storage_service.dart';
+import 'package:netdania/app/services/symbol_storage_service.dart';
 
 class SymbolFilterController extends GetxController {
   final SymbolStorageService _symbolStorage = SymbolStorageService();

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
-import 'package:netdania/screens/services/authservices.dart';
+import 'package:netdania/app/services/authservices.dart';
 
 class OHLCService {
   static const String baseUrl = 'https://uat.ax1systems.com/ohcl/api/v1';

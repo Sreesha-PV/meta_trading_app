@@ -254,11 +254,11 @@ class _DatePickerSheetState extends State<DatePickerSheet> {
             children: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel",style: TextStyle(color: AppColors.up),),
+                child: const Text("Cancel",style: TextStyle(color: AppColors.bullish),),
               ),
               TextButton(
                 onPressed: _onOkPressed,
-                child: Text("OK",style: TextStyle(color: AppColors.up),),
+                child: Text("OK",style: TextStyle(color: AppColors.bullish),),
               ),
             ],
           ),

@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:netdania/app/models/instrument_model.dart';
 import 'package:netdania/app/models/positions_model.dart';
-import 'package:netdania/screens/services/order_services.dart';
+import 'package:netdania/app/services/order_services.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
 // import 'package:netdania/app/getX/order_getX.dart';
 import 'package:netdania/app/modules/trade/helper/symbol_utils.dart';
@@ -33,6 +33,16 @@ class PositionsController extends GetxController {
 
   double getSL(int positionId) => stopPrices[positionId] ?? 0.0;
   double getTP(int positionId) => takeProfits[positionId] ?? 0.0;
+
+  
+
+// double getSL(int positionId) {
+//   return stopPrices[positionId] ?? 0.0;
+// }
+
+// double getTP(int positionId) {
+//   return takeProfits[positionId] ?? 0.0;
+// }
 
   Future<void> loadPositions() async {
     try {

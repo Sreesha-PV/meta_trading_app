@@ -4,7 +4,7 @@ import 'package:netdania/app/getX/position_getx.dart';
 import 'package:netdania/app/models/close_order_model.dart';
 import 'package:netdania/app/models/positions_model.dart';
 import 'package:netdania/app/modules/main_tab/view/main_tab_view.dart';
-import 'package:netdania/screens/services/close_position_services.dart';
+import 'package:netdania/app/services/close_position_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CloseController extends GetxController {
@@ -28,6 +28,7 @@ class CloseController extends GetxController {
     required double orderQty,
     required double orderPrice,
     required int accountId,
+
     required int relatedPositionId,
   }) async {
     final token = await getToken();
@@ -91,7 +92,7 @@ class CloseController extends GetxController {
     // );
     //     }
 
-
+// 
 //     if (pos != null) {
 //   final bool isFullClose = orderQty >= pos.positionQty;
 
@@ -128,6 +129,7 @@ class CloseController extends GetxController {
 //   }
 // }
 
+
 if (pos != null) {
   final bool isFullClose = orderQty >= pos.positionQty;
 
@@ -135,7 +137,7 @@ if (pos != null) {
     // FULL CLOSE → remove position
     positionsController.positionOrders.remove(pos);
   } else {
-    // PARTIAL CLOSE → reduce quantity
+    // PARTIALY CLOSE → reduce quantity
     final index =
         positionsController.positionOrders.indexOf(pos);
 
@@ -162,6 +164,7 @@ if (pos != null) {
     }
   }
 }
+
 
 // import 'package:get/get.dart';
 // import 'package:netdania/app/getX/position_getx.dart';
@@ -287,3 +290,4 @@ if (pos != null) {
 //     }
 //   }
 // }
+

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/app/config/theme/app_textstyle.dart';
 import 'package:netdania/app/getX/order_getX.dart';
 import 'package:netdania/app/models/order_get_model.dart';
 import 'package:netdania/app/models/instrument_model.dart';
@@ -120,7 +121,7 @@ class PendingOrderTile extends StatelessWidget {
         "Error",
         "Order not found",
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.down,
+        backgroundColor: AppColors.bearish,
         colorText: Colors.white,
       );
       return;
@@ -136,7 +137,7 @@ class PendingOrderTile extends StatelessWidget {
         "Error",
         "Instrument not found",
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.down,
+        backgroundColor: AppColors.bearish,
         colorText: Colors.white,
       );
       return;
@@ -188,8 +189,8 @@ class PendingOrderTile extends StatelessWidget {
                             children: [
                               TextSpan(
                                 text: instrument.code,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
+                                style:  TextStyle(
+                                  color: AppColors.textPrimary(context),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -197,14 +198,14 @@ class PendingOrderTile extends StatelessWidget {
                                 text:
                                     ' ${_getTypeLabel(fetchOrder.orderType, fetchOrder.side)} ',
                                 style: TextStyle(
-                                  color: isBuy ? AppColors.up : AppColors.down,
+                                  color: isBuy ? AppColors.bullish : AppColors.bearish,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               TextSpan(
                                 text: _formatVolume(fetchOrder.orderQty),
                                  style: TextStyle(
-                                  color: AppColors.textSecondary,
+                                  color: AppColors.textSecondary(context),
                                 ),
                               )
                             
@@ -218,12 +219,13 @@ class PendingOrderTile extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                  fetchOrder.orderPrice.toStringAsFixed(4),
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  fetchOrder.orderPrice.toStringAsFixed(5),
+                                  // style: const TextStyle(
+                                  //   fontSize: 14,
+                                  //   color: AppColors.textSecondary,
+                                  //   fontWeight: FontWeight.bold,
+                                  // ),
+                                  style: AppTextStyle.medium_700.textSecondary(context),
                                 ),
                                 const SizedBox(width: 4),
                                 const Icon(
@@ -235,11 +237,12 @@ class PendingOrderTile extends StatelessWidget {
                                   currentPrice == 0.0
                                       ? 'Loading...'
                                       : currentPrice.toStringAsFixed(4),
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textSecondary,
-                                  ),
+                                  // style: const TextStyle(
+                                  //   fontSize: 14,
+                                  //   fontWeight: FontWeight.bold,
+                                  //   color: AppColors.textSecondary,
+                                  // ),
+                                  style: AppTextStyle.medium_700.textSecondary(context),
                                 ),
                               ],
                             ),
@@ -249,14 +252,15 @@ class PendingOrderTile extends StatelessWidget {
                                     'S/L: ${fetchOrder.stopPrice?.toStringAsFixed(5)}',
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: AppColors.textSecondary,
+                                      color: AppColors.textSecondary(context),
                                     ),
                                   ),
+                                  SizedBox(width: 16),
                                    Text(
                                     'T/P: ${fetchOrder.limitPrice?.toStringAsFixed(5)}',
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: AppColors.textSecondary,
+                                      color: AppColors.textSecondary(context),
                                     ),
                                   ), 
                                 ],
@@ -270,11 +274,12 @@ class PendingOrderTile extends StatelessWidget {
                           children: [
                             Text(
                               'Placed',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 20,
-                                color: AppColors.textSecondary,
-                              ),
+                              // style: TextStyle(
+                              //   fontWeight: FontWeight.w400,
+                              //   fontSize: 20,
+                              //   color: AppColors.textSecondary,
+                              // ),
+                              style: AppTextStyle.h2_400.textSecondary(context),
                             ),
                           ],
                         ),
@@ -285,7 +290,8 @@ class PendingOrderTile extends StatelessWidget {
                 ListTile(
                   title: Text(
                     'Order Actions',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    // style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: AppTextStyle.body_400,
                   ),
                 ),
                 ListTile(
@@ -297,10 +303,10 @@ class PendingOrderTile extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.close, color: AppColors.down),
+                  leading: Icon(Icons.close, color: AppColors.bearish),
                   title: Text(
                     'Cancel Order',
-                    style: TextStyle(color: AppColors.down),
+                    style: TextStyle(color: AppColors.bearish),
                   ),
                   onTap: () {
                     Get.back();
@@ -338,7 +344,7 @@ class PendingOrderTile extends StatelessWidget {
                       child: Text(
                         instrument.code,
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: AppColors.textPrimary(context),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           letterSpacing: -0.5,
@@ -354,7 +360,7 @@ class PendingOrderTile extends StatelessWidget {
                       child: Text(
                         ' ${_getTypeLabel(fetchOrder.orderType, fetchOrder.side)} ',
                         style: TextStyle(
-                          color: isBuy ? AppColors.up : AppColors.down,
+                          color: isBuy ? AppColors.bullish : AppColors.bearish,
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
                           letterSpacing: -0.5,
@@ -370,33 +376,36 @@ class PendingOrderTile extends StatelessWidget {
               
                 Text(
                   '${_formatVolume(fetchOrder.orderQty)}/0.0 at',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
-                  ),
+                  // style: const TextStyle(
+                  //   fontSize: 16,
+                  //   fontWeight: FontWeight.w400,
+                  //   color: AppColors.textSecondary,
+                  // ),
+                  style: AppTextStyle.body_400.textSecondary(context),
                 ),
                 const SizedBox(width: 4),
                
                 const SizedBox(width: 4),
                
                 Text(
-                  fetchOrder.orderPrice.toStringAsFixed(4),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
-                  ),
+                  fetchOrder.orderPrice.toStringAsFixed(5),
+                  // style: const TextStyle(
+                  //   fontSize: 16,
+                  //   fontWeight: FontWeight.w400,
+                  //   color: AppColors.textSecondary,
+                  // ),
+                  style: AppTextStyle.body_400.textSecondary(context),
                 ),
               ],
             ),
             trailing: Text(
               'placed',
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 20,
-                color: AppColors.textSecondary,
-              ),
+              // style: TextStyle(
+              //   fontWeight: FontWeight.w400,
+              //   fontSize: 20,
+              //   color: AppColors.textSecondary,
+              // ),
+              style: AppTextStyle.h2_400.textSecondary(context),
             )
           ),
         ),

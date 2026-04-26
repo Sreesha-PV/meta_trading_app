@@ -1,5 +1,6 @@
 class PositionJsFunctions {
   static const String functions = '''
+
 function renderPositionLines() {
   positionLines.forEach(function(pos) {
     const id = pos.positionId;

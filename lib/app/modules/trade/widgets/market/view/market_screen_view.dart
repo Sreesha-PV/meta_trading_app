@@ -26,7 +26,7 @@ class MarketScreen extends StatelessWidget {
     return Scaffold(
       appBar: _buildSymbolAppbar(context),
       // backgroundColor: Colors.white,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
 
       // body: Padding(
       //   padding: const EdgeInsets.all(8.0),
@@ -76,7 +76,7 @@ class MarketScreen extends StatelessWidget {
                             '-',
                             style: TextStyle(fontSize: 24,
                             //  color: Colors.blue
-                            color: AppColors.up
+                            color: AppColors.bullish
                              ),
                           ),
                         ),
@@ -105,14 +105,14 @@ class MarketScreen extends StatelessWidget {
                               ),
                           child: const Text(
                             '+',
-                            style: TextStyle(fontSize: 24, color: AppColors.up),
+                            style: TextStyle(fontSize: 24, color: AppColors.bullish),
                           ),
                         ),
                       ],
                     ),
                     
                   ),
-                  Container(height: 2,color: AppColors.down,),
+                  Container(height: 2,color: AppColors.bearish,),
 
                   const SizedBox(width: 12),
 
@@ -128,9 +128,9 @@ class MarketScreen extends StatelessWidget {
                           Obx(
                             () => Text(
                               marketController.volume.value.toStringAsFixed(2),
-                              style: const TextStyle(
+                              style:  TextStyle(
                                 // color: Colors.black,
-                                color: AppColors.textPrimary,
+                                color: AppColors.textPrimary(context),
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -159,7 +159,7 @@ class MarketScreen extends StatelessWidget {
                             '-',
                             style: TextStyle(fontSize: 24, 
                             // color: Colors.blue
-                            color: AppColors.up
+                            color: AppColors.bullish
                             ),
                           ),
                         ),
@@ -190,7 +190,7 @@ class MarketScreen extends StatelessWidget {
                             '+',
                             style: TextStyle(fontSize: 24, 
                             // color: Colors.blue
-                            color: AppColors.up
+                            color: AppColors.bullish
                             ),
                           ),
                         ),
@@ -256,7 +256,7 @@ class MarketScreen extends StatelessWidget {
                 'SELL',
                 style: TextStyle(
                   // color: Colors.red,
-                  color: AppColors.down,
+                  color: AppColors.bearish,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -264,11 +264,11 @@ class MarketScreen extends StatelessWidget {
           ),
           Container(height: 20, width: 1, 
           // color: Colors.grey
-          color:AppColors.textSecondary
+          color:AppColors.textSecondary(Get.context!)
           ),
           GestureDetector(
             onTap: () => print('Close tapped'),
-            child: const Text(
+            child: Text(
               'CLOSE',
               style: TextStyle(
                 // color: Color(0xFFFFAB40),
@@ -279,7 +279,7 @@ class MarketScreen extends StatelessWidget {
           ),
           Container(height: 20, width: 1,
           //  color: Colors.grey
-          color:AppColors.textSecondary
+          color:AppColors.textSecondary(Get.context!)
            ),
           GestureDetector(
             onTap: () => print('Buy tapped'),
@@ -314,7 +314,7 @@ class MarketScreen extends StatelessWidget {
         label,
         style: const TextStyle(
           // color: Colors.blue,
-          color: AppColors.up,
+          color: AppColors.bullish,
           fontSize: 12),
       ),
     );
@@ -328,7 +328,7 @@ class MarketScreen extends StatelessWidget {
             c,
             "SL",
             //  Colors.red,
-            AppColors.down,
+            AppColors.bearish,
             c.adjustSl,
             c.slController,
           ),
@@ -393,7 +393,7 @@ class MarketScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   //  color: Colors.blue
-                  color: AppColors.up,
+                  color: AppColors.bullish,
                 ),
               ),
             ),
@@ -486,7 +486,7 @@ Widget _buildSelectedOrderCard(OrderRequestModel order, double? currentPrice,Bui
   final isBuy = order.side == 2;
   final sideColor = isBuy
   //  ? Colors.blue : Colors.red;
-    ? AppColors.up : AppColors.down;
+    ? AppColors.bullish : AppColors.bearish;
 
   return Container(
     width: MediaQuery.of(context).size.width/2, // Ensures bounded width
@@ -516,9 +516,9 @@ Widget _buildSelectedOrderCard(OrderRequestModel order, double? currentPrice,Bui
               ),
               Text(
                 'Entry: ${order.orderPrice.toStringAsFixed(4)}',
-                style: const TextStyle(fontSize: 13,
+                style:  TextStyle(fontSize: 13,
                 //  color: Colors.grey
-                color:AppColors.textSecondary
+                color:AppColors.textSecondary(context)
                  ),
               ),
             ],
@@ -533,9 +533,9 @@ Widget _buildSelectedOrderCard(OrderRequestModel order, double? currentPrice,Bui
                 currentPrice == null
                     ? '...'
                     : 'Current: ${currentPrice.toStringAsFixed(4)}',
-                style: const TextStyle(fontSize: 13,
+                style:  TextStyle(fontSize: 13,
                 //  color: Colors.grey
-                color:AppColors.textSecondary
+                color:AppColors.textSecondary(context)
                  ),
               ),
               // Text(
@@ -575,23 +575,23 @@ String _getSideLabel(int side) {
 PreferredSizeWidget _buildSymbolAppbar(BuildContext context) {
   return AppBar(
     // backgroundColor: Colors.white,
-    backgroundColor: AppColors.background,
+    backgroundColor: AppColors.background(context),
     automaticallyImplyLeading: false,
     title: Row(
       children: [
         IconButton(
-          icon: const Icon(Icons.arrow_back_sharp, 
+          icon: Icon(Icons.arrow_back_sharp, 
           // color: Colors.black
-          color: AppColors.textPrimary,
+          color: AppColors.textPrimary(context),
           ),
           onPressed: () => Navigator.pop(context),
         ),
         // Text(symbol, style: const TextStyle(color: Colors.black, fontSize: 18)),
         const Spacer(),
         PopupMenuButton<String>(
-          icon: const Icon(Icons.refresh,
+          icon:  Icon(Icons.refresh,
           //  color: Colors.black
-          color: AppColors.textPrimary,
+          color: AppColors.textPrimary(context),
            ),
           itemBuilder:
               (context) => [

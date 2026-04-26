@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
 import 'package:netdania/utils/animation_constants.dart';
 
@@ -70,8 +72,8 @@ class _AnimatedAccountMetricState extends State<AnimatedAccountMetric>
         children: [
           Text(
             widget.label,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style:  TextStyle(
+              color: AppColors.textPrimary(context),
               fontWeight: FontWeight.w400,
               fontSize: 16,
             ),
@@ -82,7 +84,7 @@ class _AnimatedAccountMetricState extends State<AnimatedAccountMetric>
               return AnimatedDefaultTextStyle(
                 duration: AnimationConstants.colorDuration,
                 style: TextStyle(
-                  color: widget.valueColor ?? AppColors.textPrimary,
+                  color: widget.valueColor ?? AppColors.textPrimary(Get.context!),
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),

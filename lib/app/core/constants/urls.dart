@@ -41,16 +41,10 @@ class ApiUrl {
 
   static String closedOrderUrl(int accountId) =>
       '$baseUrl/jwt/client/positions/settled?account_id=$accountId';
-static String pendingOrderUrl(int accountId) =>
+  static String pendingOrderUrl(int accountId) =>
       '$baseUrl/jwt/client/orders?account_id=$accountId&status=1';
 
-// static String pendingOrderUrl(int accountId, {int? status}) {
-//   final queryParams = ['account_id=$accountId'];
-//   if (status != null) queryParams.add('status=$status');
-//   return '$baseUrl/jwt/client/orders?${queryParams.join('&')}';
-// }
-  // static String pendingOrderUrl(int accountId) =>
-  //     '$baseUrl/jwt/client/orders?account_id=$accountId';
+
 
 
   static String positionUrl(int accountId) =>
@@ -65,6 +59,7 @@ static String pendingOrderUrl(int accountId) =>
   static String instrumentUrl(int id) => '$baseUrl/$id';
 
   static final String modifyUrl = '$baseUrl/jwt/client/order/modify';
+  // static final String modifyUrl = '$baseUrl/jwt/client/positions/tpsl';
   static final String closePositionUrl = '$baseUrl/jwt/client/positions/close';
   static final String cancelOrderUrl = '$baseUrl/jwt/client/order/cancel';
 

@@ -6,8 +6,8 @@ class Position {
   final double positionQty;
   final double positionInitialQty;
   final double orderPrice;
-   double? stopPrice;
-  double? limitPrice;
+  final double stopPrice;
+  final double limitPrice;
   final int? refPendingOrderId;
   final DateTime?positionDate;
 

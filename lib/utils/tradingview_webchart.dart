@@ -5,13 +5,14 @@ import 'package:netdania/app/config/theme/app_color.dart';
 import 'package:netdania/app/getX/account_getx.dart';
 import 'package:netdania/app/getX/trading_getX.dart' as tradingControllerLib;
 import 'package:netdania/app/models/instrument_model.dart';
-import 'package:netdania/screens/services/instrument_fetch_services.dart';
-import 'package:netdania/screens/services/ohlc_service.dart';
-import 'package:netdania/screens/services/socket_connection.dart';
+import 'package:netdania/app/services/instrument_fetch_services.dart';
+import 'package:netdania/app/services/ohlc_service.dart';
+import 'package:netdania/app/services/socket_connection.dart';
 // import 'package:webview_flutter/webview_flutter.dart';
 import 'package:netdania/screens/chart/chart_webview.dart';
 import 'package:netdania/screens/chart/chart_controller.dart';
 import 'package:netdania/screens/chart/chart_trade_card.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 /// Main TradingView chart widget
 class TradingViewWeb extends StatefulWidget {
@@ -33,7 +34,6 @@ class TradingViewWeb extends StatefulWidget {
 class _TradingViewWebState extends State<TradingViewWeb> {
   late ChartController _chartController;
   StreamSubscription? _subscription;
-
   List<InstrumentModel> instruments = [];
   InstrumentModel? selectedInstrument;
   bool loading = true;
@@ -44,6 +44,8 @@ class _TradingViewWebState extends State<TradingViewWeb> {
   void initState() {
     super.initState();
     print('TradingViewWeb initialized with symbol: ${widget.symbol}');
+
+
 
     _chartController = ChartController(
       symbol: widget.symbol,
@@ -117,6 +119,10 @@ class _TradingViewWebState extends State<TradingViewWeb> {
   }
 
   final InstrumentService _instrumentService = InstrumentService();
+  
+
+
+
 
   Future<void> _loadInstruments(int accountId) async {
     final data = await _instrumentService.fetchInstruments(accountId);
@@ -176,9 +182,9 @@ class _TradingViewWebState extends State<TradingViewWeb> {
                   value: symbol,
                   child: Text(
                     symbol.code,
-                    style: const TextStyle(
+                    style:  TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: AppColors.textPrimary(context),
                     ),
                   ),
                 );
@@ -245,6 +251,11 @@ class _TradingViewWebState extends State<TradingViewWeb> {
             ),
           ),
         ),
+
+
+
+
+
         _buildTimeframeSelector(),
         _buildIndicatorSelector(),
       ],
@@ -391,3 +402,4 @@ class _TradingViewWebState extends State<TradingViewWeb> {
     );
   }
 }
+

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:netdania/app/models/order_cancle.dart';
-import 'package:netdania/screens/services/cancel_order_services.dart';
+import 'package:netdania/app/services/cancel_order_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CancelOrderController extends GetxController {

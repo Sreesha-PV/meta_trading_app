@@ -4,7 +4,7 @@ enum TimeInForce {
     // = 0,
 
     // #[sea_orm(num_value = 1)]
-    GTC,
+    GTC, 
     //  = 1, // Good Till Cancelled
 
     // #[sea_orm(num_value = 2)]
@@ -12,7 +12,7 @@ enum TimeInForce {
     // = 2, // Good Till Filled
 
     // #[sea_orm(num_value = 3)]
-    GTD,
+    GTD, 
     //  = 3, // Good Till Date
 
     // #[sea_orm(num_value = 4)]
@@ -38,4 +38,5 @@ enum TimeInForce {
     IOC
     //  = 12, // Fill And Kill
 }
+
 

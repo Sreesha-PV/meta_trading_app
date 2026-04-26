@@ -12,7 +12,7 @@ import 'package:netdania/app/modules/trade/view/trading_page_view.dart';
 import 'package:netdania/app/modules/main_tab/components/bottom_navigation.dart';
 import 'package:netdania/utils/responsive_layout_helper.dart';
 import 'package:netdania/utils/tradingview_webchart.dart';
-import 'package:netdania/screens/services/socket_connection.dart';
+import 'package:netdania/app/services/socket_connection.dart';
 
 class MainTabView extends StatefulWidget {
   const MainTabView({super.key});

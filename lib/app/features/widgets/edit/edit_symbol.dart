@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/features/widgets/add/add_symbol.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
-import 'package:netdania/screens/services/symbol_storage_service.dart';
+import 'package:netdania/app/services/symbol_storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:netdania/app/modules/home/view/symbol_detail_page.dart';
 

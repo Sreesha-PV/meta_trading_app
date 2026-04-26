@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/app/config/theme/app_textstyle.dart';
 import 'package:netdania/app/getX/position_getx.dart';
 import 'package:netdania/app/getX/wallet_getX.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
@@ -46,6 +47,22 @@ class _TradingPageState extends State<TradingPage>
   void dispose() {
     super.dispose();
   }
+// void updateSL(int positionId, double value) {
+//   stopLossMap[positionId] = value;
+// }
+
+// void updateTP(int positionId, double value) {
+//   takeProfitMap[positionId] = value;
+// }
+
+// double getSL(int positionId) {
+//   return stopLossMap[positionId] ?? 0.0;
+// }
+
+// double getTP(int positionId) {
+//   return takeProfitMap[positionId] ?? 0.0;
+// }
+
 
   Future<void> _fetchAndSubscribe() async {
     final positionController = Get.find<PositionsController>();
@@ -89,6 +106,8 @@ class _TradingPageState extends State<TradingPage>
     tradingController.subscribeToSymbols(symbols);
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     final positionController = Get.find<PositionsController>();
@@ -98,7 +117,7 @@ class _TradingPageState extends State<TradingPage>
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: _buildAppBar(positionController, tradingController),
       drawer: CommonDrawer(),
       body: SingleChildScrollView(
@@ -149,7 +168,7 @@ class _TradingPageState extends State<TradingPage>
     TradingChartController tradingController,
   ) {
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       elevation: 0,
       centerTitle: true,
       title: Obx(() {
@@ -241,7 +260,7 @@ class _TradingPageState extends State<TradingPage>
             children: [
               Text(
                 'Error: ${walletController.error.value}',
-                style: const TextStyle(color: Colors.red),
+                style: const TextStyle(color: AppColors.bearish),
               ),
               const SizedBox(height: 8),
               ElevatedButton(
@@ -279,7 +298,7 @@ class _TradingPageState extends State<TradingPage>
                   label: 'Free Margin:',
                   value: freeMargin,
                   valueColor:
-                      freeMargin >= 0 ? AppColors.textPrimary : Colors.red,
+                      freeMargin >= 0 ? AppColors.textPrimary(Get.context!) : Colors.red,
                 ),
                 AnimatedAccountMetric(
                   label: 'Margin Level (%):',
@@ -339,9 +358,9 @@ class _TradingPageState extends State<TradingPage>
             }
 
             return IconButton(
-              icon: const Icon(
+              icon:  Icon(
                 Icons.more_horiz,
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondary(context),
               ),
               onPressed: () => _showBulkActions(),
             );
@@ -363,10 +382,11 @@ class _TradingPageState extends State<TradingPage>
           padding: const EdgeInsets.all(16.0),
           child: Wrap(
             children: [
-              const ListTile(
+              ListTile(
                 title: Text(
                   'Bulk Operations',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  // style: TextStyle(fontWeight: FontWeight.bold),
+                    style: AppTextStyle.h3_700,
                 ),
               ),
               ListTile(
@@ -415,7 +435,10 @@ class _TradingPageState extends State<TradingPage>
           child: Center(
             child: Text(
               'No positions yet',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+              // style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                 style: AppTextStyle.body_700.textSecondary(context),
+
+              
             ),
           ),
         );
@@ -541,7 +564,7 @@ class _TradingPageState extends State<TradingPage>
           ),
           const Spacer(),
           IconButton(
-            icon: const Icon(Icons.more_horiz, color: AppColors.textSecondary),
+            icon:  Icon(Icons.more_horiz, color: AppColors.textSecondary(Get.context!)),
             onPressed: () => _showBulkAction(),
           ),
         ],
@@ -709,7 +732,7 @@ class _AnimatedPLTextState extends State<_AnimatedPLText>
         return AnimatedDefaultTextStyle(
           duration: AnimationConstants.colorDuration,
           style: TextStyle(
-            color: v >= 0 ? Colors.blue : Colors.red,
+            color: v >= 0 ? AppColors.bullish : AppColors.bearish,
             fontWeight: FontWeight.w600,
             fontSize: 20,
           ),
@@ -741,20 +764,22 @@ class AccountMetric extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w400,
-              fontSize: 16,
-            ),
+            // style: const TextStyle(
+            //   color: AppColors.textPrimary,
+            //   fontWeight: FontWeight.w400,
+            //   fontSize: 16,
+            // ),
+              style: AppTextStyle.body_400.textPrimary(context),
+
           ),
           if (value != null)
             Text(
               value!,
               style: TextStyle(
-                color: valueColor ?? AppColors.textPrimary,
+                color: valueColor ?? AppColors.textPrimary(context),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-              ),
+              ),             
             ),
         ],
       ),

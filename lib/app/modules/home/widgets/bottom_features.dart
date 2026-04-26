@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/app/config/theme/app_textstyle.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
 import 'package:netdania/app/modules/home/view/home_page.dart' as HomePage;
 import 'package:netdania/app/modules/order/view/place_order.dart';
 import 'package:netdania/app/modules/trade/widgets/market/view/market_screen_view.dart';
 import 'package:netdania/utils/tradingview_webchart.dart';
-import 'package:netdania/screens/services/socket_connection.dart';
+import 'package:netdania/app/services/socket_connection.dart';
 
 class BottomFeaturePage extends StatelessWidget {
   final String symbol;
@@ -34,11 +35,13 @@ class BottomFeaturePage extends StatelessWidget {
           ListTile(
             title: Text(
               symbol,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
-              ),
+              // style: const TextStyle(
+              //   color: AppColors.textPrimary,
+              //   fontWeight: FontWeight.w600,
+              //   fontSize: 20,
+              // ),
+                  style: AppTextStyle.h1_700.textPrimary(context),
+
             ),
           ),
 
@@ -51,12 +54,14 @@ class BottomFeaturePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
             ),
             child: ListTile(
-              title: const Text(
+              title: Text(
                 'New Order',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w500,
-                ),
+                // style: TextStyle(
+                //   color: AppColors.textPrimary,
+                //   fontWeight: FontWeight.w500,
+                // ),
+                  style: AppTextStyle.h2_700.textPrimary(context),
+
                 textAlign: TextAlign.center,
               ),
               onTap: () {
@@ -85,12 +90,14 @@ class BottomFeaturePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
             ),
             child: ListTile(
-              title: const Text(
+              title:  Text(
                 'Chart',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w500,
-                ),
+                // style: TextStyle(
+                //   color: AppColors.textPrimary,
+                //   fontWeight: FontWeight.w500,
+                // ),
+                  style: AppTextStyle.h2_700.textPrimary(context),
+
                 textAlign: TextAlign.center,
               ),
               onTap: () {
@@ -105,7 +112,6 @@ class BottomFeaturePage extends StatelessWidget {
               },
             ),
           ),
-
           Container(
             margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
@@ -113,12 +119,14 @@ class BottomFeaturePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
             ),
             child: ListTile(
-              title: const Text(
+              title: Text(
                 'Depth of Market',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w500,
-                ),
+                // style: TextStyle(
+                //   color: AppColors.textPrimary,
+                //   fontWeight: FontWeight.w500,
+                // ),
+                  style: AppTextStyle.h2_700.textPrimary(context),
+
                 textAlign: TextAlign.center,
               ),
               onTap: () {
@@ -135,12 +143,14 @@ class BottomFeaturePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
             ),
             child: ListTile(
-              title: const Text(
+              title:  Text(
                 'Properties',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w500,
-                ),
+                // style: TextStyle(
+                //   color: AppColors.textPrimary,
+                //   fontWeight: FontWeight.w500,
+                // ),
+                  style: AppTextStyle.h2_700.textPrimary(context),
+
                 textAlign: TextAlign.center,
               ),
               onTap: () {
@@ -168,12 +178,14 @@ class BottomFeaturePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
             ),
             child: ListTile(
-              title: const Text(
+              title: Text(
                 'Cancel',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
+                // style: TextStyle(
+                //   color: AppColors.textPrimary,
+                //   fontWeight: FontWeight.w600,
+                // ),
+                  style: AppTextStyle.h2_700.textPrimary(context),
+
                 textAlign: TextAlign.center,
               ),
               onTap: () {

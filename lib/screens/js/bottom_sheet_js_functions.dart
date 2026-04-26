@@ -268,3 +268,9 @@ function confirmSlTp(positionId) {
 }
 ''';
 }
+
+
+
+
+
+

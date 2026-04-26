@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:netdania/screens/services/authservices.dart';
-import 'package:netdania/screens/services/socket_connection.dart';
-import 'package:netdania/screens/services/price_services.dart';
+import 'package:netdania/app/services/authservices.dart';
+import 'package:netdania/app/services/socket_connection.dart';
+import 'package:netdania/app/services/price_services.dart';
 import 'package:intl/intl.dart';
 
 class TradePageController extends GetxController {

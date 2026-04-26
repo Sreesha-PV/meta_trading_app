@@ -33,10 +33,10 @@ class BottomNavBar extends StatelessWidget {
                   // selectedItemColor: Colors.blue,
                   selectedItemColor: AppColors.info,
                   // unselectedItemColor: Colors.black,
-                  unselectedItemColor: AppColors.textPrimary,
+                  unselectedItemColor: AppColors.textPrimary(context),
                   // backgroundColor: const Color.fromARGB(255, 36, 36, 36),
                   // backgroundColor: Colors.white,
-                  backgroundColor: AppColors.background,
+                  backgroundColor: AppColors.background(context),
                   items: [
                     // const BottomNavigationBarItem(
                     //   icon: Icon(Icons.dashboard_outlined),
@@ -94,14 +94,14 @@ class _MoreNavItem extends StatelessWidget {
         Icon(
           icon,
           // color: Colors.grey
-          color: AppColors.textSecondary,
+          color: AppColors.textSecondary(context),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             // color: Colors.grey
-            color: AppColors.textSecondary,
+            color: AppColors.textSecondary(context),
           ),
         ),
       ],

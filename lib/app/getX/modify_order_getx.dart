@@ -112,7 +112,7 @@ import 'package:get/get.dart';
 import 'package:netdania/app/getX/order_getX.dart';
 import 'package:netdania/app/getX/position_getx.dart';
 import 'package:netdania/app/models/order_modify_model.dart';
-import 'package:netdania/screens/services/modify_position_services.dart';
+import 'package:netdania/app/services/modify_position_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ModifyOrderController extends GetxController {

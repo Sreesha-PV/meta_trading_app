@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/app/config/theme/app_textstyle.dart';
 // import 'package:netdania/app/features/widgets/add/add_symbol.dart';
 import 'package:netdania/app/features/widgets/edit/edit_symbol.dart';
+import 'package:netdania/app/getX/theme_getx.dart';
 import 'package:netdania/app/getX/trade_getX.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
 import 'package:netdania/app/modules/home/widgets/app_drawer.dart';
@@ -48,7 +50,7 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(Get.context!),
       appBar: _buildAppBar(context, symbolFilterController),
       drawer: CommonDrawer(),
       body: SafeArea(
@@ -134,18 +136,20 @@ class HomePage extends StatelessWidget {
                                 const SizedBox(height: 16),
                                 Text(
                                   'No symbols found',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.grey.shade600,
-                                  ),
+                                  // style: TextStyle(
+                                  //   fontSize: 18,
+                                  //   color: Colors.grey.shade600,
+                                  // ),
+                                  style: AppTextStyle.h3_400.textPrimary(context),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   'Try a different search term',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade500,
-                                  ),
+                                  // style: TextStyle(
+                                  //   fontSize: 14,
+                                  //   color: Colors.grey.shade500,
+                                  // ),
+                                  style: AppTextStyle.medium2_400.textSecondary(context),
                                 ),
                               ],
                             ),
@@ -184,7 +188,7 @@ class HomePage extends StatelessWidget {
     SymbolFilterController symbolFilterController,
   ) {
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       automaticallyImplyLeading: false,
       title: ValueListenableBuilder<bool>(
         valueListenable: isSearchingNotifier,
@@ -193,10 +197,10 @@ class HomePage extends StatelessWidget {
             return TextField(
               controller: searchController,
               autofocus: true,
-              style: const TextStyle(color: AppColors.textPrimary),
-              decoration: const InputDecoration(
+              style:  TextStyle(color: AppColors.textPrimary(Get.context!)),
+              decoration:  InputDecoration(
                 hintText: 'Search symbols...',
-                hintStyle: TextStyle(color: Colors.grey),
+                hintStyle: TextStyle(color: AppColors.textSecondary(Get.context!)),
                 border: InputBorder.none,
               ),
               onChanged: (value) {
@@ -216,7 +220,7 @@ class HomePage extends StatelessWidget {
                   final count = symbolFilterController.selectedSymbols.length;
                   return Text(
                     count > 0 ? 'Quotes ($count)' : 'Quotes',
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style:  TextStyle(color: AppColors.textPrimary(Get.context!)),
                   );
                 }),
               ),
@@ -248,6 +252,22 @@ class HomePage extends StatelessWidget {
         //   icon: const Icon(Icons.add),
         //   tooltip: 'Add Symbol',
         // ),
+
+
+        Obx(() {
+          final themeController = Get.find<ThemeController>();
+  final isDark =
+      themeController.themeMode.value == ThemeMode.dark;
+
+  return IconButton(
+    onPressed: () {
+      themeController.toggleTheme();
+    },
+    icon: Icon(
+      isDark ? Icons.light_mode : Icons.dark_mode,
+    ),
+  );
+}),
         ValueListenableBuilder<bool>(
           valueListenable: isSearchingNotifier,
           builder: (context, isSearching, _) {
@@ -299,16 +319,18 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'No Symbols Selected',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
-            ),
+            // style: TextStyle(
+            //   fontSize: 20,
+            //   fontWeight: FontWeight.bold,
+            //   color: Colors.grey.shade600,
+            // ),
+            style: AppTextStyle.h1_700.textSecondary(context),
           ),
           const SizedBox(height: 8),
           Text(
             'Add symbols to start tracking',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            // style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            style: AppTextStyle.medium_400.textSecondary(context),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -361,6 +383,7 @@ class HomePage extends StatelessWidget {
       ],
     );
   }
+
 
   void _subscribeToSymbols(
     TradePageController tradeController,
@@ -444,10 +467,11 @@ class HomePage extends StatelessWidget {
                   flex: 2,
                   child: Text(
                     item['symbol'] ?? '',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                    // style: const TextStyle(
+                    //   fontWeight: FontWeight.bold,
+                    //   fontSize: 15,
+                    // ),
+                    style: AppTextStyle.body2_400,
                   ),
                 ),
                 Expanded(
@@ -473,7 +497,7 @@ class HomePage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            const Divider(color: AppColors.divider, thickness: 0.5),
+             Divider(color: AppColors.divider, thickness: 0.5),
           ],
         ),
       ),
@@ -503,7 +527,7 @@ class HomePage extends StatelessWidget {
   Widget _buildSimpleHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      child: const Row(
+      child:  Row(
         children: [
           Expanded(
             flex: 2,
@@ -516,7 +540,8 @@ class HomePage extends StatelessWidget {
             flex: 1,
             child: Text(
               'Bid',
-              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+              // style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+              style: AppTextStyle.body2_500,
               textAlign: TextAlign.end,
             ),
           ),
@@ -524,7 +549,8 @@ class HomePage extends StatelessWidget {
             flex: 1,
             child: Text(
               'Ask',
-              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+              // style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+              style: AppTextStyle.body2_500,
               textAlign: TextAlign.end,
             ),
           ),
@@ -532,7 +558,9 @@ class HomePage extends StatelessWidget {
             flex: 1,
             child: Text(
               'Day %',
-              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+              // style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+              style: AppTextStyle.body2_500,
+
               textAlign: TextAlign.end,
             ),
           ),
@@ -556,7 +584,7 @@ class HomePage extends StatelessWidget {
             ? (item['percentChange'] as num).toDouble()
             : double.tryParse(item['percentChange']?.toString() ?? '0') ?? 0.0;
 
-    final percentColor = percentChange > 0 ? AppColors.up : AppColors.down;
+    final percentColor = percentChange > 0 ? AppColors.bullish : AppColors.bearish;
 
     return Flexible(
       flex: 2,
@@ -565,16 +593,18 @@ class HomePage extends StatelessWidget {
         children: [
           RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 12),
+              // style: const TextStyle(fontSize: 12),
+              style: AppTextStyle.small2_400,
               children: [
                 TextSpan(
                   text:
                       '${priceChange > 0 ? "+" : ""}${priceChange.toStringAsFixed(2)} ',
-                  style: const TextStyle(
-                    // color: Colors.grey
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                  ),
+                  // style: const TextStyle(
+                  //   // color: Colors.grey
+                  //   color: AppColors.textSecondary,
+                  //   fontSize: 13,
+                  // ),
+                  style: AppTextStyle.medium2_400.textSecondary(Get.context!)
                 ),
                 TextSpan(
                   text: '${percentChange.toStringAsFixed(2)}%',
@@ -613,21 +643,25 @@ class HomePage extends StatelessWidget {
             children: [
               Text(
                 item['time'] ?? '',
-                style: const TextStyle(
-                  fontSize: 13,
-                  //  color: Colors.grey
-                  color: AppColors.textSecondary,
-                ),
+                // style: const TextStyle(
+                //   fontSize: 13,
+                //   //  color: Colors.grey
+                //   color: AppColors.textSecondary,
+                // ),
+                  style: AppTextStyle.medium2_400.textSecondary(Get.context!)
+
               ),
               const SizedBox(width: 8),
               if (item['volume'] != null)
                 Text(
                   '⇄ ${item['volume']}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    //  color: Colors.grey
-                    color: AppColors.textSecondary,
-                  ),
+                  // style: const TextStyle(
+                  //   fontSize: 13,
+                  //   //  color: Colors.grey
+                  //   color: AppColors.textSecondary,
+                  // ),
+                  style: AppTextStyle.medium2_400.textSecondary(Get.context!)
+
                 ),
             ],
           ),
@@ -708,7 +742,7 @@ class HomePage extends StatelessWidget {
     if (isUp == null) {
       color = Colors.black;
     } else {
-      color = isUp ? AppColors.up : AppColors.down;
+      color = isUp ? AppColors.bullish : AppColors.bearish;
     }
 
     return Expanded(
@@ -818,8 +852,8 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '$label: $formattedLimit',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style:  TextStyle(
+              color: AppColors.textSecondary(Get.context!),
               fontSize: 13,
               overflow: TextOverflow.ellipsis,
             ),
@@ -836,22 +870,23 @@ class HomePage extends StatelessWidget {
         crossAxisAlignment:
             isSell ? CrossAxisAlignment.center : CrossAxisAlignment.end,
         children: [
-          const FittedBox(
+           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               '--.-----',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                fontSize: 18,
-              ),
+              // style: TextStyle(
+              //   fontWeight: FontWeight.bold,
+              //   color: Colors.black,
+              //   fontSize: 18,
+              // ),
+              style: AppTextStyle.h3_400.textPrimary(Get.context!),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             '${isSell ? "L" : "H"}: ${limitStr ?? "-"}',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style:  TextStyle(
+              color: AppColors.textSecondary(Get.context!),
               fontSize: 12,
               overflow: TextOverflow.ellipsis,
             ),
@@ -1008,7 +1043,8 @@ class HomePage extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Add symbols to start tracking',
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                // style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                style: AppTextStyle.medium_400.textPrimary(Get.context!),
               ),
             ],
           ),
@@ -1057,10 +1093,11 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       'No symbols found',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey.shade600,
-                      ),
+                      // style: TextStyle(
+                      //   fontSize: 18,
+                      //   color: Colors.grey.shade600,
+                      // ),
+                      style: AppTextStyle.h3_400.textSecondary(Get.context!),
                     ),
                   ],
                 ),
@@ -1081,7 +1118,7 @@ class HomePage extends StatelessWidget {
               final item = filteredData[index];
               return Card(
                 elevation: 1,
-                color: AppColors.background,
+                color: AppColors.background(Get.context!),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

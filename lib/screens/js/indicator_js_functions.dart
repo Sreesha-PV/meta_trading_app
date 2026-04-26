@@ -80,3 +80,7 @@ function calculateEMA(data, period) {
 }
 ''';
 }
+
+
+
+

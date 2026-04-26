@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/app/config/theme/app_textstyle.dart';
 import 'package:netdania/app/getX/order_getX.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
 import 'package:netdania/app/models/instrument_model.dart';
@@ -35,18 +36,18 @@ class HistoryPage extends StatelessWidget {
 
     return Scaffold(
       // backgroundColor: Colors.white,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: _buildHistoryAppbar(context),
       drawer: CommonDrawer(),
       body: DefaultTabController(
         length: 3,
         child: Column(
           children: [
-            const TabBar(
+             TabBar(
               indicatorColor: AppColors.info,
               dividerColor: AppColors.divider,
-              labelColor: AppColors.textPrimary,
-              unselectedLabelColor: AppColors.textSecondary,
+              labelColor: AppColors.textPrimary(context),
+              unselectedLabelColor: AppColors.textSecondary(context),
               tabs: [
                 Tab(text: 'POSITIONS'),
                 Tab(text: 'ORDERS'),
@@ -72,17 +73,17 @@ class HistoryPage extends StatelessWidget {
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     return AppBar(
       // backgroundColor: Colors.white,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       elevation: 0,
       title: Row(
         children: [
           // CommonMenuIcon(scaffoldKey: scaffoldKey),
           const SizedBox(width: 8),
-          const Text(
+           Text(
             "History",
             style: TextStyle(
               // color: Colors.black
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimary(context),
             ),
           ),
           const Spacer(),
@@ -147,7 +148,6 @@ class HistoryPage extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildClosedPositionsTab(
     TradingChartController tradingController,
     OrderController orderController,
@@ -205,38 +205,43 @@ class HistoryPage extends StatelessWidget {
                 final profit = order.settledPl;
                 final profitColor =
                     profit > 0
-                        ? AppColors.up
+                        ? AppColors.bullish
                         : profit < 0
-                        ? AppColors.down
+                        ? AppColors.bearish
                         : AppColors.neutral;
 
                 return ListTile(
                   title: Text(
                     '${instrument.code} - ${order.settledQty.toStringAsFixed(2)}',
                     // - ${_getSideLabel(order.side)}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    // style: const TextStyle(
+                    //   fontSize: 14,
+                    //   color: AppColors.textPrimary,
+                    //   fontWeight: FontWeight.bold,
+                    // ),
+                  style: AppTextStyle.medium_700.textPrimary(context),
+
                   ),
 
                   subtitle: Text(
                     _formatSettlementDate(order.settlementDate),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
-                    ),
+                    // style: TextStyle(
+                    //   fontWeight: FontWeight.bold,
+                    //   fontSize: 14,
+                    //   color: AppColors.textPrimary,
+                    // ),
+                  style: AppTextStyle.medium_700.textPrimary(context),
+
                   ),
 
                   trailing: Text(
                     '${profit.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: profitColor,
-                    ),
+                    // style: TextStyle(
+                    //   fontWeight: FontWeight.bold,
+                    //   fontSize: 14,
+                    //   color: profitColor,
+                    // ),
+                    style: AppTextStyle.medium_700.textPrimary(context),
                   ),
                 );
               },
@@ -247,99 +252,156 @@ class HistoryPage extends StatelessWidget {
     });
   }
 
-  //  ORDERS TAB
-  Widget _buildOrdersTab(OrderController orderController) {
-    final accountController = Get.find<AccountController>();
-    final accountId = accountController.selectedAccountId.value;
+  // //  ORDERS TAB
+  // Widget _buildOrdersTab(OrderController orderController) {
+  //   final accountController = Get.find<AccountController>();
+  //   final accountId = accountController.selectedAccountId.value;
 
-    return Obx(() {
-      final orderHistory = orderController.orderHistory;
-      if (orderHistory.isEmpty) {
-        return _buildEmptyState('No orders yet');
-      }
+  //   return Obx(() {
+  //     final orderHistory = orderController.orderHistory;
+  //     if (orderHistory.isEmpty) {
+  //       return _buildEmptyState('No orders yet');
+  //     }
 
-      return Column(
-        children: [
-          _buildOrderSummarySection(orderHistory),
-          const Divider(height: 0),
-          Expanded(
-            child: ListView.builder(
-              // itemCount: orders.length,
-              itemCount: orderHistory.length,
-              itemBuilder: (context, index) {
-                // final order = orders[index];
-                final order = orderHistory[index];
-                final isBuy = order.side == 1;
+  //     return Column(
+  //       children: [
+  //         _buildOrderSummarySection(orderHistory),
+  //         const Divider(height: 0),
+  //         Expanded(
+  //           child: ListView.builder(
+  //             // itemCount: orders.length,
+  //             itemCount: orderHistory.length,
+  //             itemBuilder: (context, index) {
+  //               // final order = orders[index];
+  //               final order = orderHistory[index];
+  //               final isBuy = order.side == 1;
 
-                // final instrumentName = SymbolUtils.getInstrumentName(
-                //   order.instrumentId,
-                // );
+  //               // final instrumentName = SymbolUtils.getInstrumentName(
+  //               //   order.instrumentId,
+  //               // );
 
-                // final instrument =
-                //     tradingController.getInstrument(order.instrumentId) ??
-                //     InstrumentModel(
-                //       instrumentId: order.instrumentId,
-                //       name: instrumentName,
-                //       code: instrumentName,
-                //     );
+  //               // final instrument =
+  //               //     tradingController.getInstrument(order.instrumentId) ??
+  //               //     InstrumentModel(
+  //               //       instrumentId: order.instrumentId,
+  //               //       name: instrumentName,
+  //               //       code: instrumentName,
+  //               //     );
 
-                final instrument =
-                    tradingController.getInstrument(order.instrumentId) ??
-                    InstrumentModel(
-                      instrumentId: order.instrumentId,
-                      name: 'UNKNOWN',
-                      code: 'UNKNOWN',
-                      decimalPlaces: 0,
-                    );
+  //               final instrument =
+  //                   tradingController.getInstrument(order.instrumentId) ??
+  //                   InstrumentModel(
+  //                     instrumentId: order.instrumentId,
+  //                     name: 'UNKNOWN',
+  //                     code: 'UNKNOWN',
+  //                     decimalPlaces: 0,
+  //                   );
 
-                return Column(
-                  children: [
-                    ListTile(
-                      title: RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: instrument.code,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            TextSpan(
-                              // text: _getSideLabel(order.side),
-                              text: _getTypeLabel(order.orderType, order.side),
+  //               return Column(
+  //                 children: [
+  //                   ListTile(
+  //                     title: RichText(
+  //                       text: TextSpan(
+  //                         children: [
+  //                           TextSpan(
+  //                             text: instrument.code,
+  //                             // style: const TextStyle(
+  //                             //   color: AppColors.textPrimary,
+  //                             //   fontWeight: FontWeight.bold,
+  //                             // ),
+  //                             style: AppTextStyle.body_700.textPrimary(context),
+  //                           ),
+  //                           TextSpan(
+  //                             // text: _getSideLabel(order.side),
+  //                             text: _getTypeLabel(order.orderType, order.side),
 
-                              style: TextStyle(
-                                color: isBuy ? AppColors.up : AppColors.down,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      subtitle: Text(
-                        // '${order.volume}/${order.volume} at market',
-                        '${order.orderQty}/${order.orderQty} at ${order.orderPrice}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          // color: Colors.grey,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+  //                             style: TextStyle(
+  //                               color: isBuy ? AppColors.bullish : AppColors.bearish,
+  //                               fontWeight: FontWeight.bold,
+  //                             ),
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                     subtitle: Text(
+  //                       // '${order.volume}/${order.volume} at market',
+  //                       '${order.orderQty}/${order.orderQty} at ${order.orderPrice}',
+  //                       // style: const TextStyle(
+  //                       //   fontSize: 14,
+  //                       //   // color: Colors.grey,
+  //                       //   color: AppColors.textSecondary,
+  //                       //   fontWeight: FontWeight.bold,
+  //                       // ),
+  //                        style: AppTextStyle.medium_700.textSecondary(context),
+  //                     ),
 
-                      // trailing: Text(_formatSettlementDate(order.createdAt)),
-                    ),
-                  ],
-                );
-              },
-            ),
+  //                     // trailing: Text(_formatSettlementDate(order.createdAt)),
+  //                   ),
+  //                 ],
+  //               );
+  //             },
+  //           ),
+  //         ),
+  //       ],
+  //     );
+  //   });
+  // }
+
+
+
+Widget _buildOrdersTab(OrderController orderController) {
+  return Obx(() {
+    final closedOrders = orderController.closedOrders;
+    if (closedOrders.isEmpty) {
+      return _buildEmptyState('No closed orders yet');
+    }
+
+    return Column(
+      children: [
+        // _buildOrderSummarySection(closedOrders), // Optional summary for closed orders
+        const Divider(height: 0),
+        Expanded(
+          child: ListView.builder(
+            itemCount: closedOrders.length,
+            itemBuilder: (context, index) {
+              final order = closedOrders[index];
+
+              final instrument = tradingController.getInstrument(order.instrumentId) ??
+                  InstrumentModel(
+                    instrumentId: order.instrumentId,
+                    name: 'UNKNOWN',
+                    code: 'UNKNOWN',
+                    decimalPlaces: 0,
+                  );
+
+              final isBuy = order.side == 1;
+              final profit = order.settledPl;
+              final profitColor =
+                  profit > 0 ? AppColors.bullish : profit < 0 ? AppColors.bearish : AppColors.neutral;
+
+              return ListTile(
+                title: Text(
+                  '${instrument.code} - ${order.settledQty.toStringAsFixed(2)}',
+                  style: AppTextStyle.medium_700.textPrimary(context),
+                ),
+                subtitle: Text(
+                  _formatSettlementDate(order.settlementDate),
+                  style: AppTextStyle.medium_700.textSecondary(context),
+                ),
+                trailing: Text(
+                  '${profit.toStringAsFixed(2)}',
+                  style: AppTextStyle.medium_700.copyWith(
+                    color: profitColor,
+                  ).textPrimary(context),
+                ),
+              );
+            },
           ),
-        ],
-      );
-    });
-  }
-
+        ),
+      ],
+    );
+  });
+}
   //  DEALS TAB
   Widget _buildDealsTab(OrderController orderController) {
     return Obx(() {
@@ -370,10 +432,11 @@ class HistoryPage extends StatelessWidget {
                     // '${order.volume}/${order.volume} at market',
                     '${order.orderQty} at market',
 
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    // style: const TextStyle(
+                    //   color: AppColors.textSecondary,
+                    //   fontWeight: FontWeight.bold,
+                    // ),
+                     style: AppTextStyle.medium_700.textPrimary(context),
                   ),
                 );
               },
@@ -414,41 +477,63 @@ class HistoryPage extends StatelessWidget {
     );
   }
 
-  // Widget _buildOrderSummarySection(List<OrderRequestModel> orders) {
+  // // Widget _buildOrderSummarySection(List<OrderRequestModel> orders) {
+  // Widget _buildOrderSummarySection(List<PendingOrder> orders) {
+  //   double totalVolume = 0.0;
+  //   double deposit = 500.00;
+  //   double swap = -2.0;
+  //   double commission = -4.5;
+
+  //   for (var order in orders) {
+  //     // totalVolume += order.volume;
+  //     totalVolume += order.orderQty;
+  //   }
+  //   double balance = deposit + swap + commission;
+
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         // _summaryRow("Total Orders: ", orders.length.toDouble()),
+  //         // _summaryRow("Total Volume: ", totalVolume),
+  //         // _summaryRow("Net Change: ", balance),
+  //         _summaryRow('Filled', orders.length.toDouble()),
+  //         _summaryRow('Cancelled', 0),
+  //         _summaryRow('Total', orders.length.toDouble()),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   Widget _buildOrderSummarySection(List<PendingOrder> orders) {
-    double totalVolume = 0.0;
-    double deposit = 500.00;
-    double swap = -2.0;
-    double commission = -4.5;
+  // Only consider closed orders (orderStatus == 0)
+  final closedOrders = orders.where((o) => o.orderStatus == 0).toList();
 
-    for (var order in orders) {
-      // totalVolume += order.volume;
-      totalVolume += order.orderQty;
-    }
-    double balance = deposit + swap + commission;
+  // Sum up settled profit if you have it in PendingOrder (else 0)
+  // double totalProfit = closedOrders.fold(0, (sum, o) => sum + (o.settledPl ?? 0));
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // _summaryRow("Total Orders: ", orders.length.toDouble()),
-          // _summaryRow("Total Volume: ", totalVolume),
-          // _summaryRow("Net Change: ", balance),
-          _summaryRow('Filled', orders.length.toDouble()),
-          _summaryRow('Cancelled', 0),
-          _summaryRow('Total', orders.length.toDouble()),
-        ],
-      ),
-    );
-  }
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _summaryRow('Total Closed Orders', closedOrders.length.toDouble()),
+        // _summaryRow('Total Profit', totalProfit),
+      ],
+    ),
+  );
+}
 
   Widget _summaryRow(String label, double value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(label, 
+          // style: const TextStyle(fontWeight: FontWeight.bold)
+           style: AppTextStyle.body_700.textPrimary(Get.context!),
+          ),
           const SizedBox(width: 4),
           Expanded(
             child: LayoutBuilder(
@@ -458,9 +543,9 @@ class HistoryPage extends StatelessWidget {
                   List.generate(dotCount, (_) => '.').join(),
                   maxLines: 1,
                   overflow: TextOverflow.clip,
-                  style: const TextStyle(
+                  style:  TextStyle(
                     // color: Colors.grey
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondary(context),
                   ),
                 );
               },
@@ -478,9 +563,9 @@ class HistoryPage extends StatelessWidget {
                       // : value < 0
                       //     ? Colors.red
                       //     : Colors.grey,
-                      ? AppColors.up
+                      ? AppColors.bullish
                       : value < 0
-                      ? AppColors.down
+                      ? AppColors.bearish
                       : AppColors.neutral,
               fontWeight: FontWeight.bold,
             ),
@@ -491,7 +576,7 @@ class HistoryPage extends StatelessWidget {
   }
 
   Widget _buildEmptyState(String text) {
-    return const Center(
+    return  Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -499,16 +584,18 @@ class HistoryPage extends StatelessWidget {
             Icons.history,
             size: 48,
             //  color: Colors.grey
-            color: AppColors.textSecondary,
+            color: AppColors.textSecondary(Get.context!),
           ),
           SizedBox(height: 12),
           Text(
             'Empty history',
-            style: TextStyle(
-              fontSize: 16,
-              //  color: Colors.grey
-              color: AppColors.textSecondary,
-            ),
+            // style: TextStyle(
+            //   fontSize: 16,
+            //   //  color: Colors.grey
+            //   color: AppColors.textSecondary,
+            // ),
+            style: AppTextStyle.body2_700.textPrimary(Get.context!),
+
           ),
         ],
       ),

@@ -19,7 +19,9 @@ class ChartWebView extends StatefulWidget {
 
   @override
   State<ChartWebView> createState() => _ChartWebViewState();
+  
 }
+
 
 class _ChartWebViewState extends State<ChartWebView> {
   late WebViewController _webViewController;
@@ -28,8 +30,9 @@ class _ChartWebViewState extends State<ChartWebView> {
   Timer? _positionDebounce;
 
   @override
-  void initState() {
+  void initState() {    
     super.initState();
+    
     _setupWebViewController();
 
     widget.controller.dataStream.listen((_) {
@@ -38,6 +41,8 @@ class _ChartWebViewState extends State<ChartWebView> {
 
     _listenToPositionChanges();
   }
+
+
 
   @override
   void dispose() {
@@ -88,7 +93,6 @@ class _ChartWebViewState extends State<ChartWebView> {
         updatePositionLines(${jsonEncode(lines)});
       }
     ''';
-
     _webViewController.runJavaScript(jsCode).catchError((e) {
       print('❌ Error pushing position lines: $e');
     });
@@ -107,6 +111,23 @@ class _ChartWebViewState extends State<ChartWebView> {
           ..setOnConsoleMessage(_handleConsoleMessage)
           ..loadHtmlString(_generateHtml());
   }
+
+
+//   void _setupWebViewController() {
+//   _webViewController =
+//       WebViewController()
+//         ..setJavaScriptMode(JavaScriptMode.unrestricted)
+//         ..setBackgroundColor(Colors.white)
+//         ..enableZoom(false)
+//         ..addJavaScriptChannel(
+//           'FlutterChannel',
+//           onMessageReceived: _handleJavaScriptMessage,
+//         )
+//         ..setOnConsoleMessage(_handleConsoleMessage)
+//         ..loadHtmlString(_generateHtml());
+
+//   widget.controller.setWebController(_webViewController);
+// }
 
   void _handleJavaScriptMessage(JavaScriptMessage message) {
     if (message.message == 'chart_initialized') {
@@ -217,11 +238,12 @@ class _ChartWebViewState extends State<ChartWebView> {
   }
 
   String _generateHtml() {
-    return ChartHtmlGenerator.generateHtml(
+    return TradingViewHtmlGenerator.generateHtml(
       ohlcData: widget.controller.ohlcData,
       symbol: widget.controller.currentSymbol,
       dotPosition: widget.controller.currentDotPosition,
-      selectedInstrument: widget.controller.selectedInstrument,
+      positions: [],
+      // selectedInstrument: widget.controller.selectedInstrument,
     );
   }
 

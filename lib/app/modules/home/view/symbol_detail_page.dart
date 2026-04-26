@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:netdania/app/config/theme/app_color.dart';
 import 'package:netdania/app/models/instrument_detail_model.dart';
 
 class SymbolDetailPage extends StatelessWidget {
@@ -18,8 +19,8 @@ class SymbolDetailPage extends StatelessWidget {
       backgroundColor: CupertinoColors.systemGroupedBackground,
       appBar: AppBar(
         title: Text(instrumentDetails.code),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: AppColors.background(context),
+        foregroundColor: AppColors.textPrimary(context),
         elevation: 0,
         centerTitle: true,
       ),
@@ -93,24 +94,24 @@ class SymbolDetailPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (instrumentDetails.description != null) ...[
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: CupertinoColors.systemGrey6,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          instrumentDetails.description!,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: CupertinoColors.secondaryLabel,
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    ],
+                    // if (instrumentDetails.description != null) ...[
+                    //   const SizedBox(height: 16),
+                    //   Container(
+                    //     padding: const EdgeInsets.all(12),
+                    //     decoration: BoxDecoration(
+                    //       color: CupertinoColors.systemGrey6,
+                    //       borderRadius: BorderRadius.circular(12),
+                    //     ),
+                    //     child: Text(
+                    //       instrumentDetails.description!,
+                    //       style: const TextStyle(
+                    //         fontSize: 14,
+                    //         color: CupertinoColors.secondaryLabel,
+                    //         height: 1.4,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ],
                   ],
                 ),
               ),
@@ -134,9 +135,9 @@ class SymbolDetailPage extends StatelessWidget {
               'Basic Information',
               [
                 _buildInfoTile('Instrument ID', instrumentId.toString()),
-                _buildInfoTile('Source Code', instrumentDetails.sourceCode),
-                if (instrumentDetails.isin != null) _buildInfoTile('ISIN', instrumentDetails.isin!),
-                if (instrumentDetails.exchangeName != null) _buildInfoTile('Exchange', instrumentDetails.exchangeName!),
+                // _buildInfoTile('Source Code', instrumentDetails.sourceCode),
+                // if (instrumentDetails.isin != null) _buildInfoTile('ISIN', instrumentDetails.isin!),
+                // if (instrumentDetails.exchangeName != null) _buildInfoTile('Exchange', instrumentDetails.exchangeName!),
                 _buildInfoTile('Currency ID', instrumentDetails.currencyId.toString()),
                 if (instrumentDetails.quoteCurrencyId != null)
                   _buildInfoTile('Quote Currency ID', instrumentDetails.quoteCurrencyId.toString()),
@@ -154,8 +155,8 @@ class SymbolDetailPage extends StatelessWidget {
                 _buildInfoTile('Min Order Qty', instrumentDetails.minOrderQty.toString()),
                 _buildInfoTile('Max Order Qty', instrumentDetails.maxOrderQty.toString()),
                 _buildInfoTile('Order Qty Step', instrumentDetails.orderQtyStep.toString()),
-                if (instrumentDetails.priceTick != null)
-                  _buildInfoTile('Price Tick', instrumentDetails.priceTick.toString()),
+                // if (instrumentDetails.priceTick != null)
+                //   _buildInfoTile('Price Tick', instrumentDetails.priceTick.toString()),
               ],
             ),
 
@@ -163,13 +164,13 @@ class SymbolDetailPage extends StatelessWidget {
             _buildSection(
               'Spread & Interest',
               [
-                _buildInfoTile('Spread Bid', instrumentDetails.spreadBid.toString()),
-                _buildInfoTile('Spread Ask', instrumentDetails.spreadAsk.toString()),
-                _buildInfoTile('Spread Type ID', instrumentDetails.spreadTypeId.toString()),
+                // _buildInfoTile('Spread Bid', instrumentDetails.spreadBid.toString()),
+                // _buildInfoTile('Spread Ask', instrumentDetails.spreadAsk.toString()),
+                // _buildInfoTile('Spread Type ID', instrumentDetails.spreadTypeId.toString()),
                 _buildInfoTile('Buy Interest Rate', '${instrumentDetails.buyInterestRate}%'),
                 _buildInfoTile('Sell Interest Rate', '${instrumentDetails.sellInterestRate}%'),
-                if (instrumentDetails.rolloverPip != null)
-                  _buildInfoTile('Rollover Pip', instrumentDetails.rolloverPip.toString()),
+                // if (instrumentDetails.rolloverPip != null)
+                //   _buildInfoTile('Rollover Pip', instrumentDetails.rolloverPip.toString()),
               ],
             ),
 
@@ -177,16 +178,16 @@ class SymbolDetailPage extends StatelessWidget {
             _buildSection(
               'Margin Requirements',
               [
-                _buildInfoTile('Initial Margin', '${instrumentDetails.initialMargin}%'),
-                if (instrumentDetails.initialSellMargin != null)
-                  _buildInfoTile('Initial Sell Margin', '${instrumentDetails.initialSellMargin}%'),
-                _buildInfoTile('Limit Order Margin', '${instrumentDetails.limitOrderMargin}%'),
+                // _buildInfoTile('Initial Margin', '${instrumentDetails.initialMargin}%'),
+                // if (instrumentDetails.initialSellMargin != null)
+                //   _buildInfoTile('Initial Sell Margin', '${instrumentDetails.initialSellMargin}%'),
+                // _buildInfoTile('Limit Order Margin', '${instrumentDetails.limitOrderMargin}%'),
                 _buildInfoTile('Liquidation Margin', '${instrumentDetails.liquidationMargin}%'),
-                _buildInfoTile('Intraday Order Margin', '${instrumentDetails.intradayOrderMargin}%'),
-                _buildInfoTile('Overnight Margin', '${instrumentDetails.overnightMargin}%'),
-                _buildInfoTile('BTST Order Margin', '${instrumentDetails.btstOrderMargin}%'),
-                if (instrumentDetails.minMarginLeverageLimit != null)
-                  _buildInfoTile('Min Margin Leverage Limit', instrumentDetails.minMarginLeverageLimit.toString()),
+                // _buildInfoTile('Intraday Order Margin', '${instrumentDetails.intradayOrderMargin}%'),
+                // _buildInfoTile('Overnight Margin', '${instrumentDetails.overnightMargin}%'),
+                // _buildInfoTile('BTST Order Margin', '${instrumentDetails.btstOrderMargin}%'),
+                // if (instrumentDetails.minMarginLeverageLimit != null)
+                //   _buildInfoTile('Min Margin Leverage Limit', instrumentDetails.minMarginLeverageLimit.toString()),
               ],
             ),
 
@@ -196,25 +197,25 @@ class SymbolDetailPage extends StatelessWidget {
               [
                 _buildInfoTile('Limit Min Pips', instrumentDetails.limitMinPips.toString()),
                 _buildInfoTile('Stop Min Pips', instrumentDetails.stopMinPips.toString()),
-                if (instrumentDetails.circuitLimit != null)
-                  _buildInfoTile('Circuit Limit', instrumentDetails.circuitLimit.toString()),
-                if (instrumentDetails.circuitLimitUp != null)
-                  _buildInfoTile('Circuit Limit Up', instrumentDetails.circuitLimitUp.toString()),
-                if (instrumentDetails.circuitLimitDown != null)
-                  _buildInfoTile('Circuit Limit Down', instrumentDetails.circuitLimitDown.toString()),
-                if (instrumentDetails.maxSpreadLimit != null)
-                  _buildInfoTile('Max Spread Limit', instrumentDetails.maxSpreadLimit.toString()),
+                // if (instrumentDetails.circuitLimit != null)
+                //   _buildInfoTile('Circuit Limit', instrumentDetails.circuitLimit.toString()),
+                // if (instrumentDetails.circuitLimitUp != null)
+                //   _buildInfoTile('Circuit Limit Up', instrumentDetails.circuitLimitUp.toString()),
+                // if (instrumentDetails.circuitLimitDown != null)
+                //   _buildInfoTile('Circuit Limit Down', instrumentDetails.circuitLimitDown.toString()),
+                // if (instrumentDetails.maxSpreadLimit != null)
+                //   _buildInfoTile('Max Spread Limit', instrumentDetails.maxSpreadLimit.toString()),
               ],
             ),
 
             // Commission & Fees
-            _buildSection(
-              'Commission & Fees',
-              [
-                _buildInfoTile('Commission', instrumentDetails.commission.toString()),
-                _buildInfoTile('Auto Execution Tolerance', instrumentDetails.autoExecutionTolerance.toString()),
-              ],
-            ),
+            // _buildSection(
+            //   'Commission & Fees',
+            //   [
+            //     _buildInfoTile('Commission', instrumentDetails.commission.toString()),
+            //     _buildInfoTile('Auto Execution Tolerance', instrumentDetails.autoExecutionTolerance.toString()),
+            //   ],
+            // ),
 
             // Technical Information
             _buildSection(
@@ -222,16 +223,16 @@ class SymbolDetailPage extends StatelessWidget {
               [
                 _buildInfoTile('Instrument Type ID', instrumentDetails.instrumentTypeId.toString()),
                 _buildInfoTile('Trading Status ID', instrumentDetails.tradingStatusId.toString()),
-                _buildInfoTile('Chart Mode ID', instrumentDetails.chartModeId.toString()),
-                _buildInfoTile('Margin Calc Mode ID', instrumentDetails.marginCalcModeId.toString()),
+                // _buildInfoTile('Chart Mode ID', instrumentDetails.chartModeId.toString()),
+                // _buildInfoTile('Margin Calc Mode ID', instrumentDetails.marginCalcModeId.toString()),
                 _buildInfoTile('P/L Calc Mode ID', instrumentDetails.plCalcModeId.toString()),
-                _buildInfoTile('Calc Mode ID', instrumentDetails.calcModeId.toString()),
+                // _buildInfoTile('Calc Mode ID', instrumentDetails.calcModeId.toString()),
                 _buildInfoTile('Hedge Mode ID', instrumentDetails.hedgeModeId.toString()),
-                _buildInfoTile('Auto Execution Mode ID', instrumentDetails.autoExecutionModeId.toString()),
-                _buildInfoTile('Unit ID', instrumentDetails.unitId.toString()),
-                _buildInfoTile('Price Unit ID', instrumentDetails.priceUnitId.toString()),
-                if (instrumentDetails.priceUnitValue != null)
-                  _buildInfoTile('Price Unit Value', instrumentDetails.priceUnitValue.toString()),
+                // _buildInfoTile('Auto Execution Mode ID', instrumentDetails.autoExecutionModeId.toString()),
+                // _buildInfoTile('Unit ID', instrumentDetails.unitId.toString()),
+                // _buildInfoTile('Price Unit ID', instrumentDetails.priceUnitId.toString()),
+                // if (instrumentDetails.priceUnitValue != null)
+                  // _buildInfoTile('Price Unit Value', instrumentDetails.priceUnitValue.toString()),
               ],
             ),
 
@@ -242,56 +243,56 @@ class SymbolDetailPage extends StatelessWidget {
                 _buildInfoTile('Point', instrumentDetails.point.toString()),
                 _buildInfoTile('LS Digit Length', instrumentDetails.lsDigitLength.toString()),
                 _buildInfoTile('MS Digit Length', instrumentDetails.msDigitLength.toString()),
-                _buildInfoTile('Smoothing Ticks', instrumentDetails.smoothingTicks.toString()),
-                _buildInfoTile('Ignore Wrong Tick Count', instrumentDetails.ignoreWrongTickCount.toString()),
-                _buildInfoTile('Cut Off Limit Percent CP', instrumentDetails.cutOffLimitPercentCp.toString()),
-                if (instrumentDetails.maxUpdateFrequency != null)
-                  _buildInfoTile('Max Update Frequency', instrumentDetails.maxUpdateFrequency.toString()),
-                if (instrumentDetails.maxHoldingDays != null)
-                  _buildInfoTile('Max Holding Days', instrumentDetails.maxHoldingDays.toString()),
+                // _buildInfoTile('Smoothing Ticks', instrumentDetails.smoothingTicks.toString()),
+                // _buildInfoTile('Ignore Wrong Tick Count', instrumentDetails.ignoreWrongTickCount.toString()),
+                // _buildInfoTile('Cut Off Limit Percent CP', instrumentDetails.cutOffLimitPercentCp.toString()),
+                // if (instrumentDetails.maxUpdateFrequency != null)
+                  // _buildInfoTile('Max Update Frequency', instrumentDetails.maxUpdateFrequency.toString()),
+                // if (instrumentDetails.maxHoldingDays != null)
+                  // _buildInfoTile('Max Holding Days', instrumentDetails.maxHoldingDays.toString()),
               ],
             ),
 
             // Dates & Timeline
-            if (instrumentDetails.creationDate != null ||
-                instrumentDetails.fnd != null ||
-                instrumentDetails.ltd != null)
-              _buildSection(
-                'Dates & Timeline',
-                [
-                  if (instrumentDetails.creationDate != null)
-                    _buildInfoTile('Creation Date', instrumentDetails.creationDate!),
-                  if (instrumentDetails.fnd != null) _buildInfoTile('FND', instrumentDetails.fnd!),
-                  if (instrumentDetails.ltd != null) _buildInfoTile('LTD', instrumentDetails.ltd!),
-                  _buildInfoTile('Last Update Time', instrumentDetails.lastUpdateTime),
-                ],
-              ),
+            // if (instrumentDetails.creationDate != null ||
+            //     instrumentDetails.fnd != null ||
+            //     instrumentDetails.ltd != null)
+            //   _buildSection(
+            //     'Dates & Timeline',
+            //     [
+            //       if (instrumentDetails.creationDate != null)
+            //         _buildInfoTile('Creation Date', instrumentDetails.creationDate!),
+            //       if (instrumentDetails.fnd != null) _buildInfoTile('FND', instrumentDetails.fnd!),
+            //       if (instrumentDetails.ltd != null) _buildInfoTile('LTD', instrumentDetails.ltd!),
+            //       _buildInfoTile('Last Update Time', instrumentDetails.lastUpdateTime),
+            //     ],
+            //   ),
 
             // Route Information
             _buildSection(
               'Route Information',
               [
-                _buildInfoTile('Trade Route ID', instrumentDetails.tradeRouteId.toString()),
-                _buildInfoTile('Default Route ID', instrumentDetails.defaultRouteId.toString()),
+                // _buildInfoTile('Trade Route ID', instrumentDetails.tradeRouteId.toString()),
+                // _buildInfoTile('Default Route ID', instrumentDetails.defaultRouteId.toString()),
                 _buildInfoTile('Current Trade Session Setting ID', instrumentDetails.currentTradeSessionSettingId.toString()),
               ],
             ),
 
             // Extra Information
-            if (instrumentDetails.extraInfo != null ||
-                instrumentDetails.orderSettings != null ||
-                instrumentDetails.orderSettings2 != null)
-              _buildSection(
-                'Extra Information',
-                [
-                  if (instrumentDetails.extraInfo != null)
-                    _buildTextTile('Extra Info', instrumentDetails.extraInfo!),
-                  if (instrumentDetails.orderSettings != null)
-                    _buildTextTile('Order Settings', instrumentDetails.orderSettings!),
-                  if (instrumentDetails.orderSettings2 != null)
-                    _buildTextTile('Order Settings 2', instrumentDetails.orderSettings2!),
-                ],
-              ),
+            // if (instrumentDetails.extraInfo != null ||
+            //     instrumentDetails.orderSettings != null ||
+            //     instrumentDetails.orderSettings2 != null)
+            //   _buildSection(
+            //     'Extra Information',
+            //     [
+            //       if (instrumentDetails.extraInfo != null)
+            //         _buildTextTile('Extra Info', instrumentDetails.extraInfo!),
+            //       if (instrumentDetails.orderSettings != null)
+            //         _buildTextTile('Order Settings', instrumentDetails.orderSettings!),
+            //       if (instrumentDetails.orderSettings2 != null)
+            //         _buildTextTile('Order Settings 2', instrumentDetails.orderSettings2!),
+            //     ],
+            //   ),
 
             const SizedBox(height: 32),
           ],

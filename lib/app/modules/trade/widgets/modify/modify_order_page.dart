@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/app/config/theme/app_textstyle.dart';
 import 'package:netdania/app/getX/modify_order_getx.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
 import 'package:netdania/app/models/instrument_model.dart';
 import 'package:netdania/app/models/order_get_model.dart';
-import 'package:netdania/app/modules/order/components/date_picker.dart' show DatePickerSheet;
+import 'package:netdania/app/modules/order/components/date_picker.dart'
+    show DatePickerSheet;
 import 'package:netdania/app/modules/order/components/datetime_picker_sheet.dart';
 import 'package:netdania/app/modules/order/controller/place_order_controller.dart';
 import 'package:netdania/utils/responsive_layout_helper.dart';
@@ -56,8 +58,8 @@ class ModifyOrderPage extends StatelessWidget {
     // Initialize with order values
     // c.priceController.text = order.orderPrice.toStringAsFixed(5);
     if (c.priceController.text.isEmpty) {
-  c.priceController.text = order.orderPrice.toStringAsFixed(5);
-}
+      c.priceController.text = order.orderPrice.toStringAsFixed(5);
+    }
 
     // c.slController.text = order.stopLoss?.toStringAsFixed(5) ?? '';
     // c.tpController.text = order.takeProfit?.toStringAsFixed(5) ?? '';
@@ -73,7 +75,6 @@ class ModifyOrderPage extends StatelessWidget {
         c,
         const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
       ),
-      desktop: _buildDesktopLayout(context, c),
     );
   }
 
@@ -84,7 +85,7 @@ class ModifyOrderPage extends StatelessWidget {
     EdgeInsets padding,
   ) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: _buildAppBar(context, c),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
@@ -94,24 +95,6 @@ class ModifyOrderPage extends StatelessWidget {
   }
 
   /// ---------------- DESKTOP ----------------
-  Widget _buildDesktopLayout(BuildContext context, PlaceOrderController c) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(context, c),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: _buildOrderBody(context, c, EdgeInsets.zero),
-            ),
-            const SizedBox(width: 24),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildOrderBody(
     BuildContext context,
@@ -125,33 +108,37 @@ class ModifyOrderPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-           Row(
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.5,
-                child: Text(
-                              'Price',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            )
-              ),
-              Expanded(child: _buildPriceInput(c))
-            ],
-           ),
-           SizedBox(height: 16,),
+            Row(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  child: Text(
+                    'Price',
+                    // style: TextStyle(
+                    //   color: AppColors.textPrimary,
+                    //   fontSize: 17,
+                    //   fontWeight: FontWeight.w400,
+                    // ),
+                  style: AppTextStyle.h3_400.textPrimary(context),
+
+                  ),
+                ),
+                Expanded(child: _buildPriceInput(c)),
+              ],
+            ),
+            SizedBox(height: 16),
             Row(
               children: [
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: Text(
                     'Stop Loss',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 17,
-                    ),
+                    // style: TextStyle(
+                    //   color: AppColors.textPrimary,
+                    //   fontSize: 17,
+                    // ),
+                  style: AppTextStyle.h3_400.textPrimary(context),
+
                   ),
                 ),
 
@@ -159,7 +146,7 @@ class ModifyOrderPage extends StatelessWidget {
                   child: _priceAdjuster(
                     c,
                     "SL",
-                    AppColors.down,
+                    AppColors.bearish,
                     c.adjustSl,
                     c.slController,
                   ),
@@ -173,11 +160,13 @@ class ModifyOrderPage extends StatelessWidget {
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: Text(
                     'Take Profit',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w400,
-                    ),
+                    // style: TextStyle(
+                    //   color: AppColors.textPrimary,
+                    //   fontSize: 17,
+                    //   fontWeight: FontWeight.w400,
+                    // ),
+                  style: AppTextStyle.h3_400.textPrimary(context),
+
                   ),
                 ),
                 Expanded(
@@ -200,17 +189,17 @@ class ModifyOrderPage extends StatelessWidget {
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: Text(
                     'Expiration',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w400,
-                    ),
+                    // style: TextStyle(
+                    //   color: AppColors.textPrimary,
+                    //   fontSize: 17,
+                    //   fontWeight: FontWeight.w400,
+                    // ),
+                  style: AppTextStyle.h3_400.textPrimary(context),
+
                   ),
                 ),
 
-              Expanded(
-                  child: _buildFillPolicyDropdown(c, context),
-                ),
+                Expanded(child: _buildExpiryDropDown(c, context)),
               ],
             ),
 
@@ -233,8 +222,8 @@ class ModifyOrderPage extends StatelessWidget {
                     int.tryParse(dotPositionRaw?.toString() ?? '5') ?? 5;
                 final color =
                     c.tradingController.isPriceUp
-                        ? AppColors.up
-                        : AppColors.down;
+                        ? AppColors.bullish
+                        : AppColors.bearish;
 
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -247,22 +236,20 @@ class ModifyOrderPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            SizedBox(height: 12,),
+            SizedBox(height: 12),
             _buildBottomButtons(c),
-           
           ],
         ),
       ),
     );
   }
 
-
   PreferredSizeWidget _buildAppBar(
     BuildContext context,
     PlaceOrderController c,
   ) {
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       elevation: 0.5,
       titleSpacing: 0,
       title: Padding(
@@ -270,13 +257,15 @@ class ModifyOrderPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Modify Order',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+            //  style : TextStyle(
+            //     color: AppColors.textPrimary,
+            //     fontWeight: FontWeight.bold,
+            //     fontSize: 18,
+            //   ),
+                  style: AppTextStyle.h3_500.textPrimary(context),
+
             ),
             const SizedBox(height: 4),
             RichText(
@@ -285,7 +274,7 @@ class ModifyOrderPage extends StatelessWidget {
                   TextSpan(
                     text: _getSideLabel(order.side),
                     style: TextStyle(
-                      color: order.side == 1 ? AppColors.up : AppColors.down,
+                      color: order.side == 1 ? AppColors.bullish : AppColors.bearish,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -293,26 +282,30 @@ class ModifyOrderPage extends StatelessWidget {
                   TextSpan(
                     text: ' ${order.orderQty.toStringAsFixed(2)}',
                     style: TextStyle(
-                      color: order.side == 1 ? AppColors.up : AppColors.down,
+                      color: order.side == 1 ? AppColors.bullish : AppColors.bearish,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
                   ),
                   TextSpan(
                     text: ' ${instrument.code}',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    // style: const TextStyle(
+                    //   color: AppColors.textPrimary,
+                    //   fontWeight: FontWeight.bold,
+                    //   fontSize: 14,
+                    // ),
+                  style: AppTextStyle.medium_400.textPrimary(context),
+
                   ),
                   TextSpan(
                     text: ' @ ${order.orderPrice.toStringAsFixed(5)}',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    // style: const TextStyle(
+                    //   color: AppColors.textPrimary,
+                    //   fontWeight: FontWeight.bold,
+                    //   fontSize: 14,
+                    // ),
+                  style: AppTextStyle.medium_400.textPrimary(context),
+
                   ),
                 ],
               ),
@@ -338,72 +331,69 @@ class ModifyOrderPage extends StatelessWidget {
     return 'Unknown';
   }
 
+  Widget _priceAdjuster(
+    PlaceOrderController c,
+    String label,
+    Color color,
+    void Function(double) onChange,
+    TextEditingController controller,
+  ) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            SizedBox(
+              width: 28,
+              child: GestureDetector(
+                onTap: () => onChange(-0.1),
+                child: Text(
+                  '⎼',
+                  textAlign: TextAlign.center,
+                  // style: TextStyle(fontSize: 18, color: AppColors.info),
+                  style: AppTextStyle.h3_400.info(),
 
-Widget _priceAdjuster(
-  PlaceOrderController c,
-  String label,
-  Color color,
-  void Function(double) onChange,
-  TextEditingController controller,
-) {
-  return Column(
-    children: [
-      Row(
-        children: [
-          SizedBox(
-            width: 28,
-            child: GestureDetector(
-              onTap: () => onChange(-0.1),
-              child: const Text(
-                '⎼',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: AppColors.info,
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              textAlign: TextAlign.center,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                isDense: true,
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 6),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 28,
-            child: GestureDetector(
-              onTap: () => onChange(0.1),
-              child: const Text(
-                '+',
+            Expanded(
+              child: TextField(
+                controller: controller,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: AppColors.info,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 6),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      Container(
-        height: 2,
-        color: color,
-        margin: const EdgeInsets.only(top: 4),
-      ),
-    ],
-  );
-}
+            SizedBox(
+              width: 28,
+              child: GestureDetector(
+                onTap: () => onChange(0.1),
+                child: Text(
+                  '+',
+                  textAlign: TextAlign.center,
+                  // style: TextStyle(fontSize: 18, color: AppColors.info),
+                  style: AppTextStyle.h3_400.info(),
 
+                ),
+              ),
+            ),
+          ],
+        ),
+        Container(
+          height: 2,
+          color: color,
+          margin: const EdgeInsets.only(top: 4),
+        ),
+      ],
+    );
+  }
 
- Widget _buildPriceInput(PlaceOrderController c) {
+  Widget _buildPriceInput(PlaceOrderController c) {
     return Column(
       children: [
         Row(
@@ -412,9 +402,11 @@ Widget _priceAdjuster(
               onTap: () {
                 c.adjustPrice(-0.1);
               },
-              child: const Text(
+              child: Text(
                 '⎼',
-                style: TextStyle(fontSize: 24, color: AppColors.info),
+                // style: TextStyle(fontSize: 24, color: AppColors.info),
+                  style: AppTextStyle.h1_400.info(),
+
               ),
             ),
             Expanded(
@@ -437,9 +429,11 @@ Widget _priceAdjuster(
               onTap: () {
                 c.adjustPrice(0.1);
               },
-              child: const Text(
+              child: Text(
                 '+',
-                style: TextStyle(fontSize: 24, color: AppColors.up),
+                // style: TextStyle(fontSize: 24, color: AppColors.bullish),
+                  style: AppTextStyle.h1_400.bullish(),
+
               ),
             ),
           ],
@@ -448,112 +442,111 @@ Widget _priceAdjuster(
     );
   }
 
+  // Widget _buildFillPolicyDropdown(
+  //   PlaceOrderController c,
+  //   BuildContext context,
+  // ) {
+  //   const policies = ['Fill or Kill', 'Immediate or Cancel'];
 
-  
-Widget _buildFillPolicyDropdown(
-  PlaceOrderController c,
-  BuildContext context,
-) {
-  const policies = ['Fill or Kill', 'Immediate or Cancel'];
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Obx(
-        () => DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            isExpanded: true,
-            value: c.selectedFillPolicy.value,
-            onChanged: (v) => c.selectedFillPolicy.value = v!,
-            items: policies.map((val) {
-              return DropdownMenuItem<String>(
-                value: val,
-                child: Text(
-                  val,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ),
-      Container(
-        height: 1.5,
-        color: Colors.grey[300],
-        margin: const EdgeInsets.only(top: 6),
-      ),
-    ],
-  );
-}
-
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Obx(
+  //         () => DropdownButtonHideUnderline(
+  //           child: DropdownButton<String>(
+  //             isExpanded: true,
+  //             value: c.selectedFillPolicy.value,
+  //             onChanged: (v) => c.selectedFillPolicy.value = v!,
+  //             items:
+  //                 policies.map((val) {
+  //                   return DropdownMenuItem<String>(
+  //                     value: val,
+  //                     child: Text(val, overflow: TextOverflow.ellipsis),
+  //                   );
+  //                 }).toList(),
+  //           ),
+  //         ),
+  //       ),
+  //       Container(
+  //         height: 1.5,
+  //         color: Colors.grey[300],
+  //         margin: const EdgeInsets.only(top: 6),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildExpiryDropDown(PlaceOrderController c, BuildContext context) {
     // const expirations = ['GTC', 'Today', 'Specified', 'Specified day'];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min, // shrink-wrap row
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Expiration:',
-              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
-            ),
-            SizedBox(width: 16), // optional spacing
-            Flexible(
-           
+        // Row(
+        //   mainAxisSize: MainAxisSize.min, // shrink-wrap row
+        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //   children: [
+        //     const Text(
+        //       'Expiration:',
+        //       style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        //     ),
+        //     SizedBox(width: 16), // optional spacing
+            // Flexible(
+            //   child: 
+              Obx(
+                () => DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: c.selectedExpiration.value,
+                    isExpanded: true,
+                    alignment: Alignment.centerRight,
+                    dropdownColor: AppColors.background(context),
 
-            child:  Obx(
-  () => DropdownButtonHideUnderline(
-    child: DropdownButton<String>(
-      value: c.selectedExpiration.value,
-      isExpanded: true,
-      alignment: Alignment.centerRight,
-      dropdownColor: AppColors.background,
+                    // THIS controls what is shown when selected
+                    selectedItemBuilder: (context) {
+                      return ['GTC', 'Today', 'Specified', 'Specified day']
+                          .map(
+                            (_) => Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                c.expirationDisplayValue,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                          .toList();
+                    },
 
-      // THIS controls what is shown when selected
-      selectedItemBuilder: (context) {
-        return ['GTC', 'Today', 'Specified', 'Specified day']
-            .map(
-              (_) => Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  c.expirationDisplayValue,
-                  overflow: TextOverflow.ellipsis,
+                    onChanged: (v) async {
+                      if (v == null) return;
+
+                      c.selectedExpiration.value = v;
+
+                      if (v == 'Specified') {
+                        await showDateTimePicker(context);
+                      } else if (v == 'Specified day') {
+                        await showDatePicker(context);
+                      } else {
+                        c.expirationDate.value = null;
+                      }
+                    },
+
+                    items: const [
+                      DropdownMenuItem(value: 'GTC', child: Text('GTC')),
+                      DropdownMenuItem(value: 'Today', child: Text('Today')),
+                      DropdownMenuItem(
+                        value: 'Specified',
+                        child: Text('Specified'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Specified day',
+                        child: Text('Specified day'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            )
-            .toList();
-      },
-
-      onChanged: (v) async {
-        if (v == null) return;
-
-        c.selectedExpiration.value = v;
-
-        if (v == 'Specified') {
-          await showDateTimePicker(context);
-        } else if (v == 'Specified day') {
-          await showDatePicker(context);
-        } else {
-          c.expirationDate.value = null;
-        }
-      },
-
-      items: const [
-        DropdownMenuItem(value: 'GTC', child: Text('GTC')),
-        DropdownMenuItem(value: 'Today', child: Text('Today')),
-        DropdownMenuItem(value: 'Specified', child: Text('Specified')),
-        DropdownMenuItem(value: 'Specified day', child: Text('Specified day')),
-      ],
-    ),
-  ),
-),
-
-            ),
-          ],
-        ),
+            // ),
+        //   ],
+        // ),
         Container(
           height: 1.5,
           color: Colors.grey[300],
@@ -567,58 +560,55 @@ Widget _buildFillPolicyDropdown(
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-     
+
       child: Row(
         children: [
-          
           Expanded(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.info,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.surface(Get.context!),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
               onPressed: () {
-                final newOrderPrice = double.tryParse(
-                  c.priceController.text,
-                );
+                final newOrderPrice = double.tryParse(c.priceController.text);
                 final newSL = double.tryParse(c.slController.text);
                 final newTP = double.tryParse(c.tpController.text);
-      
+
                 if (newOrderPrice == null || newOrderPrice <= 0) {
                   Get.snackbar(
                     "Error",
                     "Please enter a valid order price",
                     snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: AppColors.down,
-                    colorText: Colors.white,
+                    backgroundColor: AppColors.bearish,
+                    colorText: AppColors.surface(Get.context!),
                   );
                   return;
                 }
-    
+
                 final tif = mapExpirationToTIF(c.selectedExpiration.value);
-      
+
                 modifyorderController.modifyOrder(
                   accountId: order.accountId,
                   pendingOrderId: order.pendingOrderId,
                   orderPrice: newOrderPrice,
                   stopPrice: newSL ?? 0,
                   limitPrice: newTP ?? 0,
-                  timeInForceId: tif, 
+                  timeInForceId: tif,
                   status: order.orderStatus,
-                  expiryDateTime:c.expirationDate.value
-                  
+                  expiryDateTime: c.expirationDate.value,
                 );
-      
-      
+
                 Get.back();
               },
-              child: const Text(
+              child:  Text(
                 'MODIFY ORDER',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  // style: AppTextStyle.body_700,
+
               ),
             ),
           ),
@@ -637,10 +627,13 @@ Widget _buildFillPolicyDropdown(
           TextSpan(
             text: parts[1].substring(0, 2),
             style: const TextStyle(fontSize: 18),
+            // style: AppTextStyle.h3_400
           ),
           TextSpan(
             text: parts[1].substring(2),
             style: const TextStyle(fontSize: 24),
+                  // style: AppTextStyle.h1_400.bullish,
+
           ),
         ],
       ),

@@ -65,13 +65,19 @@ class _AnimatedProfitTextState extends State<AnimatedProfitText>
           style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 20,
-            color:
-                v > 0
-                    ? AppColors.up
-                    : v < 0
-                    ? AppColors.down
-                    : AppColors.textSecondary,
-            letterSpacing: -0.3,
+            // color:
+            //     v > 0
+            //         ? AppColors.bullish
+            //         : v < 0
+            //         ? AppColors.bearish
+            //         : AppColors.textSecondary,
+            // letterSpacing: -0.3,
+color: (v > 0
+    ? AppColors.bullish
+    : v < 0
+        ? AppColors.bearish
+        : AppColors.textSecondary) as Color,
+            
           ),
           child: Text(v.toStringAsFixed(2)),
         );

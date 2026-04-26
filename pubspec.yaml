@@ -51,7 +51,8 @@ dependencies:
   get_storage: ^2.1.1
   # dio: ^5.9.0
   flutter_dotenv: ^6.0.0
-  webview_flutter: ^4.13.1
+  # webview_flutter: ^4.13.1
+  webview_flutter: ^4.13.0
   universal_html: ^2.0.7
   # flutter_inappwebview: ^6.1.5
   # webview_flutter_wkwebview: ^3.23.0
@@ -98,6 +99,7 @@ flutter:
     - .env
     - assets/charting_library/
     - assets/charting_library/bundles/
+    # - assets/tradingview_chart.html
     # - assets/charting_library/
 
     

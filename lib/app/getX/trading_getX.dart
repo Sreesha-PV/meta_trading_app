@@ -6,11 +6,12 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:netdania/app/core/constants/urls.dart';
 import 'package:netdania/app/getX/account_getx.dart';
+import 'package:netdania/app/getX/order_getX.dart';
 import 'package:netdania/app/getX/trade_getX.dart';
 import 'package:netdania/app/models/instrument_detail_model.dart';
 import 'package:netdania/app/models/instrument_model.dart';
 import 'package:netdania/app/models/trade_model.dart';
-import 'package:netdania/screens/services/instrument_fetch_services.dart';
+import 'package:netdania/app/services/instrument_fetch_services.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -43,10 +44,14 @@ class TradingChartController extends GetxController {
     return _instrumentDetailsCache.containsKey(instrumentId);
   }
 
-  void cacheInstrumentDetails(int instrumentId, dynamic details) {
-    _instrumentDetailsCache[instrumentId] = details;
-  }
+  // void cacheInstrumentDetails(int instrumentId, dynamic details) {
+  //   _instrumentDetailsCache[instrumentId] = details;
+  // }
 
+
+void cacheInstrumentDetails(int instrumentId, InstrumentDetailsModel details) {
+  _instrumentDetailsCache[instrumentId] = details;
+}
   dynamic getCachedInstrumentDetails(int instrumentId) {
     return _instrumentDetailsCache[instrumentId];
   }
@@ -151,24 +156,64 @@ class TradingChartController extends GetxController {
     }
   }
 
-  Future<dynamic> detailsInstruments(int instrumentId) async {
-    print("Intrument Details from Order $instrumentId");
+ 
+  // Future<dynamic> detailsInstruments(int instrumentId) async {
+  //   print("Intrument Details from Order $instrumentId");
 
-    if (hasInstrumentDetails(instrumentId)) {
-      return _instrumentDetailsCache[instrumentId];
-    }
-    try {
-      final details = await service.fetchInstrumentById(instrumentId);
-      print("Details :$details");
-      cacheInstrumentDetails(instrumentId, details);
-      print("Cache:$_instrumentDetailsCache");
-      return details;
-    } catch (error) {
-      rethrow;
-    }
+  //   if (hasInstrumentDetails(instrumentId)) {
+  //     return _instrumentDetailsCache[instrumentId];
+  //   }
+  //   try {
+  //     final InstrumentDetailsModel? details = await service.fetchInstrumentById(instrumentId);
+  //     print("Details :$details");
+  //     cacheInstrumentDetails(instrumentId, details);
+  //     print("Cache:$_instrumentDetailsCache");
+  //     return details;
+  //   } catch (error) {
+  //     rethrow;
+  //   }
+  // }
+
+  
+Future<InstrumentDetailsModel?> detailsInstruments(int instrumentId) async {
+  // print("Instrument Details from Order $instrumentId");
+
+  if (hasInstrumentDetails(instrumentId)) {
+    return _instrumentDetailsCache[instrumentId];
   }
 
-  void onLoginSuccess() {
+  try {
+    final InstrumentDetailsModel? details =
+        await service.fetchInstrumentById(instrumentId);
+
+    // print("Details : $details");
+
+    if (details != null) {
+      cacheInstrumentDetails(instrumentId, details);
+      print("Cache: $_instrumentDetailsCache");
+    }
+
+    return details;
+  } catch (error) {
+    rethrow;
+  }
+}
+
+
+  void onLoginSuccess()async {
+      final orderController = Get.find<OrderController>();
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('user_id');
+
+      if (userId != null) {
+        final userIdInt = int.tryParse(userId);
+        if (userIdInt != null) {
+          orderController.fetchOrders(userIdInt, true);
+
+        
+          orderController.fetchPendingOrders(userIdInt);
+        }
+      }
    
     debugPrint(' Login success → initializing socket');
     _tryInitSocket();
@@ -211,7 +256,7 @@ class TradingChartController extends GetxController {
             };
 
             // debugPrint(
-            //   '💰 Loaded price for $code: bid=${priceData['bid']}, ask=${priceData['ask']}',
+            //   ' Loaded price for $code: bid=${priceData['bid']}, ask=${priceData['ask']}',
             // );
           }
         }

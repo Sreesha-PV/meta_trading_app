@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 // import 'package:fl_chart/fl_chart.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/app/config/theme/app_textstyle.dart';
 import 'package:netdania/app/getX/modify_limit_getx.dart';
 import 'package:netdania/app/models/instrument_model.dart';
 import 'package:netdania/app/models/positions_model.dart';
@@ -71,15 +72,15 @@ class ModifyPositionPage extends StatelessWidget {
     });
 
    
-    c.symbol.value = symbol;
-    c.currentBuyPrice.value = currentBuyPrice;
-    c.currentSellPrice.value = currentSellPrice;
-    c.volume.value =
-        position
-            .positionQty; 
-    c.price.value = orderPrice;
-    c.sl.value = stopPrice; 
-    c.tp.value = limitPrice; 
+    // c.symbol.value = symbol;
+    // c.currentBuyPrice.value = currentBuyPrice;
+    // c.currentSellPrice.value = currentSellPrice;
+    // c.volume.value =
+    //     position
+    //         .positionQty; 
+    // c.price.value = orderPrice;
+    // c.sl.value = stopPrice; 
+    // c.tp.value = limitPrice; 
 
     // c.setSymbol(symbol);
     // c.currentBuyPrice.value = currentBuyPrice;
@@ -95,7 +96,7 @@ class ModifyPositionPage extends StatelessWidget {
       desktop: _buildDesktopLayout(context, c),
     );
   }
-
+// 
   /// ---------------- MOBILE / TABLET ----------------
   Widget _buildScaffold(
     BuildContext context,
@@ -104,7 +105,7 @@ class ModifyPositionPage extends StatelessWidget {
   ) {
     return Scaffold(
       // backgroundColor: Colors.white,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: _buildAppBar(context, c),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
@@ -117,7 +118,7 @@ class ModifyPositionPage extends StatelessWidget {
   Widget _buildDesktopLayout(BuildContext context, PlaceOrderController c) {
     return Scaffold(
       // backgroundColor: Colors.white,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: _buildAppBar(context, c),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
@@ -177,10 +178,12 @@ class ModifyPositionPage extends StatelessWidget {
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: Text(
                     'Stop Loss',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 17,
-                    ),
+                    // style: TextStyle(
+                    //   color: AppColors.textPrimary,
+                    //   fontSize: 17,
+                    // ),
+                  style: AppTextStyle.h3_400.textPrimary(context),
+
                   ),
                 ),
 
@@ -188,7 +191,7 @@ class ModifyPositionPage extends StatelessWidget {
                   child: _priceAdjuster(
                     c,
                     "SL",
-                    AppColors.down,
+                    AppColors.bearish,
                     c.adjustSl,
                     c.slController,
                   ),
@@ -202,11 +205,13 @@ class ModifyPositionPage extends StatelessWidget {
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: Text(
                     'Take Profit',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w400,
-                    ),
+                    // style: TextStyle(
+                    //   color: AppColors.textPrimary,
+                    //   fontSize: 17,
+                    //   fontWeight: FontWeight.w400,
+                    // ),
+                  style: AppTextStyle.h3_400.textPrimary(context),
+
                   ),
                 ),
                 Expanded(
@@ -229,11 +234,13 @@ class ModifyPositionPage extends StatelessWidget {
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: Text(
                     'Expiration',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w400,
-                    ),
+                    // style: TextStyle(
+                    //   color: AppColors.textPrimary,
+                    //   fontSize: 17,
+                    //   fontWeight: FontWeight.w400,
+                    // ),
+                  style: AppTextStyle.h3_400.textPrimary(context),
+
                   ),
                 ),
 
@@ -252,7 +259,8 @@ class ModifyPositionPage extends StatelessWidget {
               ),
               child: Obx(() {
                 final symbol = c.symbol.value;
-                final ticker = c.tradingController.getTicker(symbol);
+                // final ticker = c.tradingController.getTicker(symbol);
+                final ticker = c.tradingController.getTickerSafe(c.symbol.value);
                 final bidRaw = ticker?['bid'];
                 final askRaw = ticker?['ask'];
                 final dotPositionRaw = ticker?['dot_position'];
@@ -262,8 +270,8 @@ class ModifyPositionPage extends StatelessWidget {
                     int.tryParse(dotPositionRaw?.toString() ?? '5') ?? 5;
                 final color =
                     c.tradingController.isPriceUp
-                        ? AppColors.up
-                        : AppColors.down;
+                        ? AppColors.bullish
+                        : AppColors.bearish;
 
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -280,7 +288,9 @@ class ModifyPositionPage extends StatelessWidget {
             Text(
               'Stop Loss or Take Profit you set must differ from market price by at least 250 points.Stop processsing is performed on the broker side',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              // style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: AppTextStyle.small_400.textSecondary(context),
+
             ),
             SizedBox(height: 12,),
             Row(
@@ -305,6 +315,8 @@ class ModifyPositionPage extends StatelessWidget {
                           double.tryParse(c.tpController.text) ??
                           pending.limitPrice ??
                           0,
+                      // stopPrice: position.stopPrice,
+                      // limitPrice: position.limitPrice,
                       timeInForceId: 1,
                     );
 
@@ -313,16 +325,19 @@ class ModifyPositionPage extends StatelessWidget {
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppColors.down
+                      color: AppColors.bearish
                     ),
                     child: Column(
                       children: [
                         Text('Modify',
-                        style: TextStyle(
-                          color: AppColors.background,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold
-                        ),)
+                        // style: TextStyle(
+                        //   color: AppColors.background,
+                        //   fontSize: 16,
+                        //   fontWeight: FontWeight.bold
+                        // ),
+                  style: AppTextStyle.body_400.surface(context),
+
+                        )
                       ],
                     ),
                      ),
@@ -342,7 +357,7 @@ class ModifyPositionPage extends StatelessWidget {
   ) {
     return AppBar(
       // backgroundColor: Colors.white,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       // automaticallyImplyLeading: false,
       title: Column(
         children: [
@@ -350,11 +365,13 @@ class ModifyPositionPage extends StatelessWidget {
             children: [
               Text(
                 'Modify position',
-                style: const TextStyle(
-                  // color: Colors.black,
-                  color: AppColors.textPrimary,
-                  fontSize: 18,
-                ),
+                // style: const TextStyle(
+                //   // color: Colors.black,
+                //   color: AppColors.textPrimary,
+                //   fontSize: 18,
+                // ),
+                  style: AppTextStyle.h3_400.textPrimary(context),
+
               ),
             ],
           ),
@@ -376,7 +393,8 @@ class ModifyPositionPage extends StatelessWidget {
           // ),
           Obx(() {
             // final ticker = c.tradingController.getTickerSafe(c.symbol.value);
-            final ticker = c.tradingController.getTickerSafe(symbol);
+            // final ticker = c.tradingController.getTickerSafe(symbol);
+            final ticker = c.tradingController.getTickerSafe(c.symbol.value);
 
             final bid =
                 double.tryParse(ticker?['bid']?.toString() ?? '0') ?? 0.0;
@@ -397,42 +415,48 @@ class ModifyPositionPage extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: '$side ',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
+                        // style: TextStyle(
+                        //   color: AppColors.textSecondary,
+                        //   fontWeight: FontWeight.bold,
+                        //   fontSize: 14,
+                        // ),
+                  style: AppTextStyle.medium_700.textSecondary(context),
+
                       ),
                       TextSpan(
                         // text: c.volume.value.toStringAsFixed(2),
                         // text: position.positionQty.toStringAsFixed(2),
                         text: _formatVolume(position.positionQty),
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
+                        // style: TextStyle(
+                        //   color: AppColors.textSecondary,
+                        //   fontWeight: FontWeight.bold,
+                        //   fontSize: 14,
+                        // ),
+                  style: AppTextStyle.medium_700.textSecondary(context),
+
                       ),
 
                       TextSpan(
 
                         text: instrument.code,
-                        style: const TextStyle(
+                        // style: const TextStyle(
 
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
+                        //   color: AppColors.textSecondary,
+                        //   fontWeight: FontWeight.bold,
+                        //   fontSize: 14,
+                        // ),
+                        style: AppTextStyle.medium_700.textSecondary(context),
                       ),
                       TextSpan(
                         text: orderPrice.toStringAsFixed(5),
 
-                        style: const TextStyle(
-                          // color: Colors.black,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
+                        // style: const TextStyle(
+                        //   // color: Colors.black,
+                        //   color: AppColors.textSecondary,
+                        //   fontWeight: FontWeight.bold,
+                        //   fontSize: 14,
+                        // ),
+                        style: AppTextStyle.medium_700.textSecondary(context),
                       ),
                     ],
                   ),
@@ -472,13 +496,14 @@ Widget _priceAdjuster(
             width: 28,
             child: GestureDetector(
               onTap: () => onChange(-0.1),
-              child: const Text(
+              child: Text(
                 '-',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: AppColors.info,
-                ),
+                // style: TextStyle(
+                //   fontSize: 18,
+                //   color: AppColors.info,
+                // ),
+                style: AppTextStyle.h3_400.info(),
               ),
             ),
           ),
@@ -499,13 +524,14 @@ Widget _priceAdjuster(
             width: 28,
             child: GestureDetector(
               onTap: () => onChange(0.1),
-              child: const Text(
+              child: Text(
                 '+',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: AppColors.info,
-                ),
+                // style: TextStyle(
+                //   fontSize: 18,
+                //   color: AppColors.info,
+                // ),
+                style: AppTextStyle.h3_400.info(),
               ),
             ),
           ),
@@ -566,10 +592,12 @@ Widget _buildFillPolicyDropdown(
           TextSpan(
             text: parts[1].substring(0, 2),
             style: const TextStyle(fontSize: 18),
+            // style: AppTextStyle.h3_400,
           ),
           TextSpan(
             text: parts[1].substring(2),
             style: const TextStyle(fontSize: 24),
+            // style: AppTextStyle.h1_400,
           ),
         ],
       ),

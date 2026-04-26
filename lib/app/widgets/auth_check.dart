@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:netdania/screens/services/authservices.dart';
+import 'package:netdania/app/services/authservices.dart';
 import 'package:netdania/app/getX/user_getX.dart';
 import 'package:netdania/app/getX/account_getx.dart';
 import 'package:netdania/utils/websocket_web.dart';
@@ -126,7 +126,7 @@ class _AuthCheckState extends State<AuthCheck> {
     try {
       debugPrint('🔍 Starting authentication check...');
       final token = await _authService.getToken();
-      await Future.delayed(const Duration(milliseconds: 300));
+      // await Future.delayed(const Duration(milliseconds: 300));
       if (token == null || token.isEmpty) {
         debugPrint('🔐 No token found, redirecting to login');
         Get.offAllNamed('/login');

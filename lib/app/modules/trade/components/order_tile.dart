@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netdania/app/config/theme/app_color.dart';
+import 'package:netdania/app/config/theme/app_textstyle.dart';
 import 'package:netdania/app/getX/order_getX.dart';
 import 'package:netdania/app/getX/position_getx.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
@@ -9,7 +10,7 @@ import 'package:netdania/app/models/positions_model.dart';
 import 'package:netdania/app/modules/order/view/place_order.dart';
 // import 'package:netdania/app/modules/order/view/place_order.dart';
 // import 'package:netdania/app/modules/trade/components/pending_ordertile.dart';
-import 'package:netdania/app/modules/trade/widgets/closeposition/view/close_position.dart';
+import 'package:netdania/app/modules/trade/widgets/closeposition/view/close_position.dart' hide TextStyle;
 import 'package:netdania/app/modules/trade/widgets/modify/modify_position.dart';
 // import 'package:netdania/screens/services/instrument_fetch_services.dart';
 import 'package:netdania/app/getX/modify_limit_getx.dart';
@@ -57,7 +58,7 @@ class OrderTile extends StatelessWidget {
     required this.currencyRate,
     // required this.pendingOrderId,
   });
-
+  
   @override
   Widget build(BuildContext context) {
     final isBuy = position.side == 1;
@@ -79,9 +80,8 @@ class OrderTile extends StatelessWidget {
       currencyRate: currencyRate,
     );
 
-    // print("Profit $profit");
+    // print("ShowProfit $profit");
     final profitColor = getProfitColor(profit);
-
     void showPositionActions(BuildContext context) {
       showModalBottomSheet(
         context: context,
@@ -129,24 +129,25 @@ class OrderTile extends StatelessWidget {
                               children: [
                                 TextSpan(
                                   text: instrument.code,
-                                  style: const TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  // style: const TextStyle(
+                                  //   color: AppColors.textPrimary,
+                                  //   fontWeight: FontWeight.bold,
+                                  // ),
+                                  style: AppTextStyle.h2_500.textPrimary(context)
                                 ),
                                 TextSpan(
                                   text: ' ${_getSideLabel(position.side)} ',
                                   style: TextStyle(
                                     color:
-                                        isBuy ? AppColors.up : AppColors.down,
-                                    fontWeight: FontWeight.bold,
+                                        isBuy ? AppColors.bullish : AppColors.bearish,
+                                    fontWeight: FontWeight.bold,fontSize: 16
                                   ),
                                 ),
                                 TextSpan(
                                   text: _formatVolume(position.positionQty),
                                   style: TextStyle(
                                     color:
-                                        isBuy ? AppColors.up : AppColors.down,
+                                        isBuy ? AppColors.bullish : AppColors.bearish,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -160,11 +161,12 @@ class OrderTile extends StatelessWidget {
                                 children: [
                                   Text(
                                     entryPrice.toStringAsFixed(4),
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.textSecondary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    // style: const TextStyle(
+                                    //   fontSize: 14,
+                                    //   color: AppColors.textSecondary,
+                                    //   fontWeight: FontWeight.bold,
+                                    // ),
+                                    style: AppTextStyle.medium_400.textSecondary(context),
                                   ),
                                   const SizedBox(width: 4),
                                   const Icon(
@@ -177,11 +179,13 @@ class OrderTile extends StatelessWidget {
                                     currentPrice == 0.0
                                         ? 'Loading...'
                                         : currentPrice.toStringAsFixed(4),
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w400,
-                                      color: AppColors.textSecondary,
-                                    ),
+                                    // style: const TextStyle(
+                                    //   fontSize: 16,
+                                    //   fontWeight: FontWeight.w400,
+                                    //   color: AppColors.textSecondary,
+                                    // ),
+                                    style: AppTextStyle.body_400.textPrimary(context)
+
                                   ),
                                 ],
                               ),
@@ -196,24 +200,51 @@ class OrderTile extends StatelessWidget {
                                 final takeProfit = positionsController.getTP(
                                   position.positionId,
                                 );
+                               
 
-                                return Row(
+                                return
+                                  Row(
                                   children: [
+                              
                                     Text(
-                                      'S/L: ${stopLoss.toStringAsFixed(decimalPlaces)}',
+                                      
+                                      // 'S/L: ${stopLoss.toStringAsFixed(decimalPlaces)}',
+                                      'S/L: ${position.stopPrice.toStringAsFixed(decimalPlaces)}',
+
                                       style: TextStyle(
-                                        color: AppColors.textSecondary,
+                                        color: AppColors.textSecondary(context),
                                       ),
                                     ),
                                     SizedBox(width: 16),
                                     Text(
-                                      'T/P: ${takeProfit.toStringAsFixed(decimalPlaces)}',
+                                      // 'T/P: ${takeProfit.toStringAsFixed(decimalPlaces)}',
+                                      'T/P: ${position.limitPrice.toStringAsFixed(decimalPlaces)}',
+
                                       style: TextStyle(
-                                        color: AppColors.textSecondary,
+                                        color: AppColors.textSecondary(context),
                                       ),
                                     ),
                                   ],
                                 );
+
+  //                               final stopLoss =
+  //     positionsController.getSL(position.positionId) ?? 0.0;
+  // final takeProfit =
+  //     positionsController.getTP(position.positionId) ?? 0.0;
+
+  // return Row(
+  //   children: [
+  //     Text(
+  //       'S/L: ${stopLoss.toStringAsFixed(decimalPlaces)}',
+  //       style: TextStyle(color: AppColors.textSecondary),
+  //     ),
+  //     SizedBox(width: 16),
+  //     Text(
+  //       'T/P: ${takeProfit.toStringAsFixed(decimalPlaces)}',
+  //       style: TextStyle(color: AppColors.textSecondary),
+  //     ),
+  //   ],
+  // );
                               }),
 
                               Row(
@@ -241,7 +272,7 @@ class OrderTile extends StatelessWidget {
                               Text(
                                 '#${position.positionId}',
                                 style: TextStyle(
-                                  color: AppColors.textSecondary,
+                                  color: AppColors.textSecondary(context),
                                 ),
                               ),
                               // Text(_formatDate(position.positionDate))
@@ -255,7 +286,7 @@ class OrderTile extends StatelessWidget {
                     // leading: Icon(Icons.edit, color: AppColors.info),
                     title: const Text(
                       'Close Position',
-                      style: TextStyle(color: AppColors.down),
+                      style: TextStyle(color: AppColors.bearish),
                       textAlign: TextAlign.center,
                     ),
                     onTap: () async {
@@ -379,8 +410,8 @@ class OrderTile extends StatelessWidget {
                           orderPrice: realPosition.orderPrice,
                           stopPrice: stopLoss ?? 0.0,
                           limitPrice: takeProfit ?? 0.0,
-                          // position: realPosition,
-                          position: position,
+                          position: realPosition,
+                          // position: position,
                           instrument: instrument,
                         ),
                         arguments: {"pendingOrder": pendingOrder},
@@ -429,7 +460,7 @@ class OrderTile extends StatelessWidget {
                       // onPlaceOrder();
                     },
                   ),
-                  Divider(height: 1, thickness: 1, color: Colors.grey[300]),
+                  Divider(height: 1, thickness: 1, color: AppColors.border(Get.context!)),
                   ListTile(
                     // leading: Icon(Icons.close, color: AppColors.info),
                     title: Text(
@@ -459,10 +490,9 @@ class OrderTile extends StatelessWidget {
     if (realPosition == null) {
       return Padding(
         padding: const EdgeInsets.all(16),
-        child: Text("Position not found", style: TextStyle(color: Colors.red)),
+        child: Text("Position not found", style: TextStyle(color: AppColors.error)),
       );
     }
-
     return Column(
       children: [
         InkWell(
@@ -502,7 +532,7 @@ class OrderTile extends StatelessWidget {
                           child: Text(
                             ' ${_getSideLabel(position.side)} ',
                             style: TextStyle(
-                              color: isBuy ? AppColors.up : AppColors.down,
+                              color: isBuy ? AppColors.bullish : AppColors.bearish,
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                               letterSpacing: -0.5,
@@ -513,7 +543,7 @@ class OrderTile extends StatelessWidget {
                       TextSpan(
                         text: _formatVolume(position.positionQty),
                         style: TextStyle(
-                          color: isBuy ? AppColors.up : AppColors.down,
+                          color: isBuy ? AppColors.bullish: AppColors.bearish,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -524,28 +554,30 @@ class OrderTile extends StatelessWidget {
                   children: [
                     Text(
                       entryPrice.toStringAsFixed(4),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textSecondary,
-                      ),
+                      // style: const TextStyle(
+                      //   fontSize: 16,
+                      //   fontWeight: FontWeight.w400,
+                      //   color: AppColors.textSecondary,
+                      // ),
+                      style: AppTextStyle.body_400.textSecondary(context),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(
+                    Icon(
                       Icons.arrow_right_alt_rounded,
                       size: 16,
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondary(context),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       currentPrice == 0.0
                           ? 'Loading...'
-                          : currentPrice.toStringAsFixed(4),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textSecondary,
-                      ),
+                          : currentPrice.toStringAsFixed(5),
+                      // style: const TextStyle(
+                      //   fontSize: 16,
+                      //   fontWeight: FontWeight.w400,
+                      //   color: AppColors.textSecondary,
+                      // ),
+                      style: AppTextStyle.body_400.textSecondary(context),
                     ),
                   ],
                 ),
@@ -571,7 +603,6 @@ class OrderTile extends StatelessWidget {
       ],
     );
   }
-
   String _getSideLabel(int side) {
     switch (side) {
       case 1:
@@ -608,9 +639,9 @@ class OrderTile extends StatelessWidget {
   }
 
   Color getProfitColor(double profit) {
-    if (profit > 0) return AppColors.up;
-    if (profit < 0) return AppColors.down;
-    return AppColors.textSecondary;
+    if (profit > 0) return AppColors.bullish;
+    if (profit < 0) return AppColors.bearish;
+    return AppColors.textSecondary(Get.context!);
   }
 
   String _formatVolume(double volume) {
@@ -623,7 +654,6 @@ class OrderTile extends StatelessWidget {
     }
     return volume.toStringAsFixed(3);
   }
-
   String _formatDate(DateTime? dateTime) {
     if (dateTime == null) return '--';
 
@@ -632,4 +662,27 @@ class OrderTile extends StatelessWidget {
         "${dateTime.day.toString().padLeft(2, '0')}";
   }
 }
+
+
+// bool isFullClose = orderQty.toStringAsFixed(2) ==
+//     pos.positionQty.toStringAsFixed(2);
+
+// final bool isFullClose =
+//     (orderQty - pos.positionQty).abs() < 0.000001;
+
+
+//     if (isSuccess) {
+//   Get.snackbar('Success', result["message"] ?? 'Position closed');
+
+//   final positionsController = Get.find<PositionsController>();
+//   final orderController = Get.find<OrderController>();
+
+//   //  Always refresh from backend
+//   await positionsController.fetchOpenPositions(accountId);
+//   await orderController.fetchClosedOrders(accountId);
+
+//   Get.until((route) => route.isFirst);
+//   MainTabView.selectedIndexNotifier.value = 2;
+// }
+
 

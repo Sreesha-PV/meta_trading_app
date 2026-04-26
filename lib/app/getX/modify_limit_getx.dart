@@ -643,8 +643,8 @@ import 'package:netdania/app/getX/trading_getX.dart';
 import 'package:netdania/app/models/limit_modify_model.dart';
 import 'package:netdania/app/models/order_modify_model.dart';
 import 'package:netdania/app/modules/main_tab/view/main_tab_view.dart';
-import 'package:netdania/screens/services/modify_position_services.dart';
-import 'package:netdania/screens/services/order_services.dart';
+import 'package:netdania/app/services/modify_position_services.dart';
+import 'package:netdania/app/services/order_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:netdania/app/models/order_model.dart';
 import 'package:flutter/foundation.dart';
@@ -689,7 +689,6 @@ class ModifyLimitController extends GetxController {
         limitPrice: limitPrice,
         timeInForceId: timeInForceId,
       );
-
       // print("Payload for Modify Limit: ${body.toJson()}");
 
       final filteredOrders = await OrderService.fetchOrdersByRelatedPositionId(
@@ -802,12 +801,12 @@ class ModifyLimitController extends GetxController {
         print("Created New Limit Order → Result: $result");
       }
 
+
       if (!stopOrderFound && stopPrice != orderPrice) {
         print("No Stop Order found. Creating new Stop Order...");
         final order = OrderRequestModel(
           accountId: accountId,
-          // accountUuid: 'string',
-          // instrumentId: 1001,
+
           instrumentId: instrumentId,
           side: (side == 1) ? 2 : 1,
           orderType: 3,

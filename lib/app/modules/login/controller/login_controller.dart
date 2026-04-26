@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:netdania/app/getX/trading_getX.dart';
 import 'package:netdania/app/getX/user_getX.dart';
 import 'package:netdania/app/modules/main_tab/view/main_tab_view.dart';
-import 'package:netdania/screens/services/authservices.dart';
+import 'package:netdania/app/services/authservices.dart';
 import 'package:netdania/app/getX/account_getx.dart';
 import 'package:netdania/utils/websocket_web.dart';
 import 'package:netdania/app/getX/trade_getX.dart';

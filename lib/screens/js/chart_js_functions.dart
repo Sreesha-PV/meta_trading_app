@@ -51,6 +51,10 @@ function initChart() {
       },
     });
 
+
+
+
+
     candlestickSeries = chart.addCandlestickSeries({
       upColor: '#26a69a',
       downColor: '#ef5350',
@@ -102,7 +106,7 @@ function initChart() {
 
       showLatestPrice();
       isChartReady = true;
-      renderPositionLines(); // ← ensures positions drawn before notifying Flutter
+      renderPositionLines();
 
       if (window.FlutterChannel) {
         window.FlutterChannel.postMessage('chart_initialized');
@@ -116,6 +120,10 @@ function initChart() {
       '<div style="color:red">Error: ' + err.message + '</div>';
   }
 }
+
+
+
+
 
 // ── Live Price Line ───────────────────────────────────────────────
 function addLivePriceLine() {
@@ -204,6 +212,7 @@ function updatePriceInfo(data) {
     ' C:' + data.close.toFixed(dotPosition) + '</div>';
 }
 
+
 function showLatestPrice() {
   if (!chartData || !chartData.length) return;
   
@@ -214,5 +223,17 @@ function showLatestPrice() {
     '<div class="' + (up ? 'price-up' : 'price-down') + '">' +
     'Latest: ' + last.close.toFixed(dotPosition) + '</div>';
 }
+
+
+
+
+
+
+
 ''';
 }
+
+
+
+
+
