@@ -17,8 +17,17 @@ A professional-grade mobile trading application built with Flutter, enabling rea
 
 
 Screenshots
-Home
-![Home](home.png.jpeg)
+## 📸 Screenshots
+
+<p align="center">
+  <img src="home.png.jpeg" width="180"/>
+  &nbsp;
+  <img src="chart.png.jpeg" width="180"/>
+  &nbsp;
+  <img src="homepage.png.jpeg" width="180"/>
+  &nbsp;
+  <img src="edit%20symbol.png.jpeg" width="180"/>
+</p>
 
 🛠️ Tech Stack
 Technology                  Usage
